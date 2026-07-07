@@ -7,6 +7,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
+                <!-- Verdict banner -->
                 {% if prediction.predicted_class == 'Eligible' %}
                     <div class="result-verdict eligible">
                         <div class="verdict-icon"><i class="bi bi-check-circle-fill"></i></div>
@@ -62,11 +63,11 @@
                                     <span class="gauge-value" id="gauge-value">0%</span>
                                 </div>
                             </div>
-                            <p class="gauge-caption">Eligibility Score</p>
+                            <span class="gauge-caption">Eligibility Score</span>
                         </div>
                     </div>
 
-                    <!-- Decision detail -->
+                    <!-- Assessment summary -->
                     <div class="col-md-8">
                         <div class="result-card">
                             <p class="result-card-label">Assessment Summary</p>
@@ -122,20 +123,54 @@
                     </span>
                 </div>
 
-                <!-- Actions -->
-                <div class="result-actions mt-4">
-                    <button class="btn btn-navy" id="download-pdf-btn">
-                        <i class="bi bi-download me-2"></i>Download Result
-                    </button>
-                    <a href="{{ url_for('main.apply') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-repeat me-2"></i>Re-Apply
-                    </a>
-                    <a href="{{ url_for('main.history') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-clock-history me-2"></i>View History
-                    </a>
+                <!-- Email notice -->
+                <div class="result-email-notice mt-3">
+                    <i class="bi bi-envelope me-2"></i>
+                    A copy of this result has been sent to your registered email address.
                 </div>
 
-                <!-- Printable / PDF area (hidden on screen) -->
+                <!-- What's next section -->
+                <div class="result-next-section mt-4">
+                    <p class="result-next-heading">What would you like to do next?</p>
+                    <div class="result-next-cards">
+
+                        <a href="{{ url_for('main.history') }}" class="result-next-card">
+                            <div class="result-next-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="result-next-body">
+                                <span class="result-next-title">View Application History</span>
+                                <span class="result-next-desc">See all your past applications and their results in one place.</span>
+                            </div>
+                            <i class="bi bi-chevron-right result-next-arrow"></i>
+                        </a>
+
+                        <a href="{{ url_for('main.apply') }}" class="result-next-card">
+                            <div class="result-next-icon">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
+                            <div class="result-next-body">
+                                <span class="result-next-title">Submit Another Application</span>
+                                <span class="result-next-desc">Adjust your details and check eligibility again with updated information.</span>
+                            </div>
+                            <i class="bi bi-chevron-right result-next-arrow"></i>
+                        </a>
+
+                        <button class="result-next-card" id="download-pdf-btn">
+                            <div class="result-next-icon">
+                                <i class="bi bi-download"></i>
+                            </div>
+                            <div class="result-next-body">
+                                <span class="result-next-title">Download This Result</span>
+                                <span class="result-next-desc">Save or print a formatted copy of your eligibility assessment.</span>
+                            </div>
+                            <i class="bi bi-chevron-right result-next-arrow"></i>
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Printable PDF area (hidden on screen) -->
                 <div id="pdf-content" class="pdf-area" style="display:none;">
                     <div class="pdf-header">
                         <h2>Loan Eligibility Prediction System</h2>
