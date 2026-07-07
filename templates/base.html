@@ -15,14 +15,16 @@
     <nav class="navbar navbar-expand-lg navbar-dark leps-navbar">
         <div class="container">
             <a class="navbar-brand leps-brand" href="{{ url_for('main.index') }}">
-                <span class="brand-acronym">LEPS</span>
+                <div class="brand-mark">
+                    <span class="brand-mark-text">LEPS</span>
+                </div>
                 <span class="brand-full">Loan Eligibility Prediction System</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="box-shadow:none;">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin() %}
                             <li class="nav-item">
@@ -45,11 +47,11 @@
                                 <a class="nav-link" href="{{ url_for('main.history') }}">History</a>
                             </li>
                         {% endif %}
-                        <li class="nav-item ms-lg-3">
-                            <span class="nav-user-name">{{ current_user.full_name.split()[0] }}</span>
-                        </li>
                         <li class="nav-item ms-lg-2">
-                            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.logout') }}">Log Out</a>
+                            <span class="nav-user-name d-none d-lg-inline">{{ current_user.full_name.split()[0] }}</span>
+                        </li>
+                        <li class="nav-item ms-lg-1">
+                            <a class="btn-nav-logout" href="{{ url_for('main.logout') }}">Log Out</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
