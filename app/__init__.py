@@ -5,7 +5,6 @@ from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from config import config
 import os
-from app.models import User
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -16,6 +15,7 @@ login_manager.login_view = 'main.login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
+from app.models import User
 
 #Admin User Creation
 
