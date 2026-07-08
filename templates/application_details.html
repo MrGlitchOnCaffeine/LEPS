@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h1 class="mb-4">
+        Application Details
+    </h1>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <h5 class="mb-3">
+                Reference ID
+            </h5>
+
+            <p>
+                {{ application.reference_id }}
+            </p>
+
+            <hr>
+
+            <p class="text-muted mb-0">
+                Detailed application information will appear here in the next stages.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
