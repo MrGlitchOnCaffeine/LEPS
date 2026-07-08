@@ -18,24 +18,23 @@ login_manager.login_message_category = 'info'
 from app.models import User
 
 
-def create_admin():
-    admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password = os.getenv("ADMIN_PASSWORD")
-
-    if not admin_email or not admin_password:
+def create_user_if_missing(name, email, password, phone, role):
+    if not email or not password:
         return
 
-    admin = User.query.filter_by(email=admin_email).first()
+    user = User.query.filter_by(email=email).first()
 
-    if not admin:
-        admin = User(
-            full_name=os.getenv("ADMIN_NAME", "Admin User"),
-            email=admin_email,
-            phone_number=os.getenv("ADMIN_PHONE", ""),
-            role="admin"
+    if not user:
+        user = User(
+            full_name=name,
+            email=email,
+            phone_number=phone,
+            role=role
         )
-        admin.set_password(admin_password)
-        db.session.add(admin)
+
+        user.set_password(password)
+
+        db.session.add(user)
         db.session.commit()
 
 
@@ -60,8 +59,23 @@ def create_app(config_name='default'):
     app.register_blueprint(main)
 
     with app.app_context():
-        db.create_all()
-        create_admin()
+    db.create_all()
+
+    create_user_if_missing(
+        name=os.getenv("ADMIN_NAME", "Admin User"),
+        email=os.getenv("ADMIN_EMAIL"),
+        password=os.getenv("ADMIN_PASSWORD"),
+        phone=os.getenv("ADMIN_PHONE", ""),
+        role="admin"
+    )
+
+    create_user_if_missing(
+        name=os.getenv("TEST_USER_NAME", "Test Applicant"),
+        email=os.getenv("TEST_USER_EMAIL"),
+        password=os.getenv("TEST_USER_PASSWORD"),
+        phone=os.getenv("TEST_USER_PHONE", ""),
+        role="user"
+    )
 
     return app
 
