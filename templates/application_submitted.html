@@ -122,7 +122,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 360px;
+        min-height: 380px;
     }
 
     .meta-card {
@@ -130,20 +130,28 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: .35rem;
+        gap: .25rem;
+    }
+
+    .gauge-block {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .9rem;
     }
 
     .gauge-wrap {
-        width: min(100%, 330px);
+        width: min(100%, 340px);
         display: grid;
         place-items: center;
-        margin-bottom: 1rem;
         position: relative;
     }
 
     .gauge {
-        width: clamp(230px, 34vw, 320px);
-        height: clamp(230px, 34vw, 320px);
+        width: clamp(240px, 36vw, 330px);
+        height: clamp(240px, 36vw, 330px);
         overflow: visible;
         filter: drop-shadow(0 10px 20px rgba(30, 32, 40, 0.07));
         transform: rotate(-90deg);
@@ -174,17 +182,18 @@
         justify-content: center;
         align-items: center;
         text-align: center;
-        width: clamp(132px, 38vw, 184px);
-        height: clamp(132px, 38vw, 184px);
+        width: clamp(138px, 38vw, 190px);
+        height: clamp(138px, 38vw, 190px);
         padding: 12px;
         border-radius: 50%;
         background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.99), rgba(253,251,246,0.98));
         border: 1px solid rgba(214, 206, 184, 0.9);
         box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+        box-sizing: border-box;
     }
 
     .gauge-value {
-        font-size: clamp(1.75rem, 6vw, 2.45rem);
+        font-size: clamp(1.85rem, 6vw, 2.55rem);
         font-weight: 800;
         line-height: 1;
         letter-spacing: -0.03em;
@@ -192,25 +201,25 @@
     }
 
     .gauge-label {
-        margin-top: 6px;
-        font-size: clamp(.66rem, 2vw, .92rem);
+        margin-top: 7px;
+        font-size: clamp(.68rem, 1.9vw, .92rem);
         line-height: 1.15;
         color: var(--text-muted);
-        font-weight: 700;
+        font-weight: 800;
         text-align: center;
-        max-width: 90%;
-        word-break: break-word;
+        max-width: 9.5rem;
+        white-space: normal;
     }
 
     .decision-badge {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: .5rem;
         padding: .55rem .9rem;
         border-radius: 999px;
         font-size: .9rem;
         font-weight: 800;
-        margin-bottom: .8rem;
         border: 1px solid transparent;
     }
 
@@ -307,11 +316,11 @@
 
     @media (max-width: 575.98px) {
         .app-score-page {
-            padding: .9rem 0 1.6rem;
+            padding: .85rem 0 1.6rem;
         }
 
         .score-hero {
-            padding: 1rem;
+            padding: .95rem;
             border-radius: 18px;
         }
 
@@ -322,7 +331,7 @@
         }
 
         .score-card {
-            min-height: 300px;
+            min-height: 320px;
         }
 
         .gauge {
@@ -331,8 +340,8 @@
         }
 
         .gauge-center {
-            width: 132px;
-            height: 132px;
+            width: 140px;
+            height: 140px;
             padding: 10px;
         }
 
@@ -343,6 +352,7 @@
         .gauge-label {
             font-size: .68rem;
             line-height: 1.12;
+            max-width: 7.5rem;
         }
 
         .meta-row {
@@ -382,35 +392,37 @@
 
             <div class="score-grid">
                 <div class="score-card">
-                    <div class="gauge-wrap position-relative">
-                        <svg class="gauge" viewBox="0 0 220 220" aria-hidden="true">
-                            <circle class="gauge-bg" cx="110" cy="110" r="82"></circle>
-                            <circle class="gauge-progress" cx="110" cy="110" r="82" data-score="{{ score_value }}" style="stroke: {{ gauge_color }};"></circle>
-                        </svg>
-                        <div class="gauge-center">
-                            <div class="gauge-value" data-score-value>{{ score_value }}%</div>
-                            <div class="gauge-label">Eligibility Score</div>
+                    <div class="gauge-block">
+                        <div class="gauge-wrap">
+                            <svg class="gauge" viewBox="0 0 240 240" aria-hidden="true">
+                                <circle class="gauge-bg" cx="120" cy="120" r="92"></circle>
+                                <circle class="gauge-progress" cx="120" cy="120" r="92" data-score="{{ score_value }}" style="stroke: {{ gauge_color }};"></circle>
+                            </svg>
+                            <div class="gauge-center">
+                                <div class="gauge-value" data-score-value>{{ score_value }}%</div>
+                                <div class="gauge-label">Eligibility Score</div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="decision-badge
-                        {% if predicted_class|lower == 'eligible' %}decision-eligible
-                        {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}decision-review
-                        {% else %}decision-noteligible
-                        {% endif %}">
-                        {% if predicted_class|lower == 'eligible' %}
-                            Eligible
-                        {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}
-                            Requires Review
-                        {% else %}
-                            Not Eligible
-                        {% endif %}
-                    </div>
+                        <div class="decision-badge
+                            {% if predicted_class|lower == 'eligible' %}decision-eligible
+                            {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}decision-review
+                            {% else %}decision-noteligible
+                            {% endif %}">
+                            {% if predicted_class|lower == 'eligible' %}
+                                Eligible
+                            {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}
+                                Requires Review
+                            {% else %}
+                                Not Eligible
+                            {% endif %}
+                        </div>
 
-                    <p class="score-note">
-                        This score is generated from the submitted application details and represents the system's
-                        evaluation outcome. It is not the final administrative decision.
-                    </p>
+                        <p class="score-note">
+                            This score is generated from the submitted application details and represents the system's
+                            evaluation outcome. It is not the final administrative decision.
+                        </p>
+                    </div>
                 </div>
 
                 <aside class="meta-card">
@@ -473,7 +485,7 @@
     if (!progressCircle || !scoreValue) return;
 
     var score = parseFloat(progressCircle.getAttribute('data-score')) || 0;
-    var radius = 82;
+    var radius = 92;
     var circumference = 2 * Math.PI * radius;
 
     function animateGauge() {
