@@ -18,13 +18,14 @@ class Config:
     @staticmethod
     def get_database_uri():
         uri = os.environ.get('DATABASE_URL', 'sqlite:///loan_eligibility.db')
-        # Render provides PostgreSQL URIs starting with postgres://
-        # SQLAlchemy requires postgresql:// instead
         if uri.startswith('postgres://'):
             uri = uri.replace('postgres://', 'postgresql://', 1)
         return uri
 
     SQLALCHEMY_DATABASE_URI = get_database_uri.__func__()
+
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_CHECK_DEFAULT = False
 
 
 class DevelopmentConfig(Config):
@@ -32,10 +33,17 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL', 'sqlite:///loan_eligibility.db'
     )
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 
 class ProductionConfig(Config):
     DEBUG = False
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SECURE = True
+    REMEMBER_COOKIE_HTTPONLY = True
 
 
 config = {
