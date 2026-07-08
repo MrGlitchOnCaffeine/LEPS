@@ -292,7 +292,7 @@
                         showErrors([data.error]);
                         return;
                     }
-                    window.location.href = '/result/' + data.application_id;
+                    window.location.href = '/application-submitted/' + data.application_id;
                 })
                 .catch(function () {
                     hideLoading();
