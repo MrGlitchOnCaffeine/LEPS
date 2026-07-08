@@ -1,35 +1,657 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    :root {
+        --slate: #1E2028;
+        --slate-mid: #2C3040;
+        --slate-soft: #3A3F52;
+        --saffron: #C49A1A;
+        --saffron-hover: #A8821A;
+        --saffron-light: #E8C84A;
+        --saffron-faint: #F5ECC0;
+        --off-white: #F8F5EE;
+        --warm-white: #FDFBF6;
+        --border-warm: #EAE4D4;
+        --border-mid: #D6CEB8;
+        --white: #FFFFFF;
+        --eligible: #2D6B40;
+        --eligible-bg: #EBF5EE;
+        --eligible-bd: #A8D4B4;
+        --denied: #8C2A1E;
+        --denied-bg: #F5EBEA;
+        --denied-bd: #D4A09A;
+        --review: #7A5200;
+        --review-bg: #F5EDD6;
+        --review-bd: #D4B87A;
+        --text-primary: #1A1C22;
+        --text-body: #3A3D48;
+        --text-muted: #6B6E7A;
+        --text-faint: #9A9DA8;
+    }
 
-<div class="container py-5">
+    .details-page {
+        padding: clamp(1rem, 2vw, 2rem) 0 3rem;
+        background: linear-gradient(180deg, var(--off-white), var(--warm-white));
+    }
 
-    <h1 class="mb-4">
-        Application Details
-    </h1>
+    .details-shell {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
 
-    <div class="card shadow-sm">
+    .details-hero {
+        background: linear-gradient(180deg, var(--warm-white), rgba(255, 255, 255, 0.98));
+        border: 1px solid var(--border-warm);
+        border-radius: 20px;
+        box-shadow: 0 10px 28px rgba(30, 32, 40, 0.06);
+        padding: clamp(1rem, 2vw, 1.75rem);
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
 
-        <div class="card-body">
+    .details-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(196, 154, 26, 0.08), transparent 28%),
+                    radial-gradient(circle at bottom left, rgba(45, 107, 64, 0.05), transparent 26%);
+        pointer-events: none;
+    }
 
-            <h5 class="mb-3">
-                Reference ID
-            </h5>
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .4rem .75rem;
+        border-radius: 999px;
+        background: var(--saffron-faint);
+        color: var(--slate);
+        font-size: .82rem;
+        font-weight: 800;
+        letter-spacing: .02em;
+        margin-bottom: .95rem;
+        position: relative;
+        z-index: 1;
+    }
 
-            <p>
-                {{ application.reference_id }}
+    .details-title {
+        font-size: clamp(1.7rem, 4vw, 2.5rem);
+        line-height: 1.08;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: .5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .details-subtitle {
+        max-width: 70ch;
+        color: var(--text-body);
+        font-size: clamp(.98rem, 2vw, 1.03rem);
+        line-height: 1.7;
+        margin-bottom: 1.1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .8rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .strip-item {
+        background: var(--white);
+        border: 1px solid var(--border-warm);
+        border-radius: 16px;
+        padding: .95rem 1rem;
+        box-shadow: 0 6px 18px rgba(30, 32, 40, 0.04);
+    }
+
+    .strip-label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: .4rem;
+    }
+
+    .strip-value {
+        color: var(--text-primary);
+        font-size: .98rem;
+        font-weight: 800;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .status-pill,
+    .score-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .36rem .7rem;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: .84rem;
+    }
+
+    .status-pill {
+        background: var(--saffron-faint);
+        color: var(--slate);
+    }
+
+    .score-pill {
+        background: var(--eligible-bg);
+        color: var(--eligible);
+        border: 1px solid var(--eligible-bd);
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .panel {
+        background: var(--white);
+        border: 1px solid var(--border-warm);
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(30, 32, 40, 0.05);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 1rem 1.1rem;
+        background: linear-gradient(180deg, rgba(248, 245, 238, 0.65), rgba(255, 255, 255, 0.92));
+        border-bottom: 1px solid rgba(234, 228, 212, 0.9);
+    }
+
+    .panel-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .panel-subtitle {
+        margin: .25rem 0 0;
+        color: var(--text-muted);
+        font-size: .9rem;
+        line-height: 1.5;
+    }
+
+    .panel-body {
+        padding: 1rem 1.1rem 1.15rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .85rem;
+    }
+
+    .info-card {
+        border: 1px solid var(--border-warm);
+        border-radius: 14px;
+        padding: .85rem .9rem;
+        background: linear-gradient(180deg, var(--warm-white), var(--white));
+        min-height: 86px;
+    }
+
+    .info-label {
+        display: block;
+        font-size: .76rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        font-weight: 800;
+        margin-bottom: .35rem;
+    }
+
+    .info-value {
+        font-size: .98rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
+    .wide-panel {
+        grid-column: 1 / -1;
+    }
+
+    .factor-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .factor-item {
+        border: 1px solid var(--border-warm);
+        background: var(--warm-white);
+        border-radius: 14px;
+        padding: .85rem .95rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+
+    .factor-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--saffron);
+        margin-top: .35rem;
+        flex: 0 0 12px;
+        box-shadow: 0 0 0 4px rgba(196, 154, 26, 0.12);
+    }
+
+    .factor-text {
+        color: var(--text-primary);
+        font-size: .95rem;
+        font-weight: 700;
+        line-height: 1.55;
+    }
+
+    .reason-box {
+        border: 1px solid var(--review-bd);
+        background: var(--review-bg);
+        color: var(--review);
+        border-radius: 14px;
+        padding: 1rem 1.05rem;
+        line-height: 1.7;
+        font-size: .96rem;
+        font-weight: 600;
+    }
+
+    .muted-box {
+        border: 1px dashed var(--border-mid);
+        background: rgba(253, 251, 246, 0.9);
+        color: var(--text-muted);
+        border-radius: 14px;
+        padding: .95rem 1rem;
+        line-height: 1.65;
+        font-size: .95rem;
+    }
+
+    .footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        margin-top: 1rem;
+    }
+
+    .btn-leps {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .85rem 1.1rem;
+        border-radius: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+    }
+
+    .btn-leps:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .btn-primary-leps {
+        background: var(--saffron);
+        color: #fff;
+        border-color: var(--saffron);
+    }
+
+    .btn-primary-leps:hover {
+        background: var(--saffron-hover);
+        border-color: var(--saffron-hover);
+        color: #fff;
+    }
+
+    .btn-secondary-leps {
+        background: var(--white);
+        color: var(--slate);
+        border-color: var(--border-mid);
+    }
+
+    .btn-secondary-leps:hover {
+        background: var(--warm-white);
+        color: var(--slate);
+    }
+
+    .timeline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem;
+        margin-top: .95rem;
+    }
+
+    .timeline-step {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .55rem .8rem;
+        border-radius: 999px;
+        font-size: .85rem;
+        font-weight: 800;
+        border: 1px solid var(--border-warm);
+        background: var(--white);
+        color: var(--text-body);
+    }
+
+    .timeline-step.active {
+        background: var(--eligible-bg);
+        border-color: var(--eligible-bd);
+        color: var(--eligible);
+    }
+
+    .timeline-step.current {
+        background: var(--review-bg);
+        border-color: var(--review-bd);
+        color: var(--review);
+    }
+
+    @media (max-width: 991.98px) {
+        .summary-strip,
+        .details-grid,
+        .factor-list,
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wide-panel {
+            grid-column: auto;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .details-page {
+            padding: .85rem 0 1.5rem;
+        }
+
+        .details-hero {
+            padding: .95rem;
+            border-radius: 18px;
+        }
+
+        .panel-header,
+        .panel-body {
+            padding-left: .95rem;
+            padding-right: .95rem;
+        }
+
+        .info-card,
+        .factor-item,
+        .reason-box,
+        .muted-box {
+            border-radius: 12px;
+        }
+
+        .footer-actions {
+            flex-direction: column;
+        }
+
+        .btn-leps {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="details-page">
+    <div class="container details-shell">
+        {% set predicted_class = prediction.predicted_class if prediction else '' %}
+        {% set score_value = prediction.eligibility_percentage if prediction else 0 %}
+        {% set loan_amount = prediction.estimated_loan_amount if prediction and prediction.estimated_loan_amount is not none else None %}
+        {% set submitted_on = prediction.prediction_date if prediction and prediction.prediction_date else None %}
+        {% set status_text = application.status if application and application.status else 'Pending' %}
+        {% set decision_label = 'Eligible' if predicted_class|lower == 'eligible' else ('Requires Review' if predicted_class|lower in ['review', 'requires review', 'pending review'] else 'Not Eligible') %}
+        {% set status_class = 'score-pill' if predicted_class|lower == 'eligible' else ('timeline-step current' if predicted_class|lower in ['review', 'requires review', 'pending review'] else 'timeline-step') %}
+
+        <section class="details-hero">
+            <div class="eyebrow">Application Details</div>
+            <h1 class="details-title">View the complete information associated with your submitted loan application.</h1>
+            <p class="details-subtitle">
+                Use this page to verify the information you submitted, review the application score, and understand
+                the status of your loan request.
             </p>
 
-            <hr>
+            <div class="summary-strip">
+                <div class="strip-item">
+                    <span class="strip-label">Reference ID</span>
+                    <div class="strip-value">{{ application.reference_id }}</div>
+                </div>
+                <div class="strip-item">
+                    <span class="strip-label">Current Status</span>
+                    <div class="strip-value"><span class="status-pill">{{ status_text }}</span></div>
+                </div>
+                <div class="strip-item">
+                    <span class="strip-label">Date Submitted</span>
+                    <div class="strip-value">
+                        {% if submitted_on %}
+                            {{ submitted_on.strftime('%d %b %Y, %I:%M %p') }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            <p class="text-muted mb-0">
-                Detailed application information will appear here in the next stages.
-            </p>
+        <div class="details-grid">
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Quick Overview</h2>
+                    <p class="panel-subtitle">A concise summary of the score and current decision.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <span class="info-label">Application Score</span>
+                            <div class="info-value">{{ score_value }}%</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Decision</span>
+                            <div class="info-value">{{ decision_label }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Estimated Loan Amount</span>
+                            <div class="info-value">
+                                {% if loan_amount is not none %}
+                                    ₦{{ '{:,.2f}'.format(loan_amount) }}
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Model Version</span>
+                            <div class="info-value">
+                                {% if prediction and prediction.model_version %}
+                                    {{ prediction.model_version }}
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Application Status</h2>
+                    <p class="panel-subtitle">This reflects where the application sits in the process.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="timeline">
+                        <span class="timeline-step active">Submitted</span>
+                        <span class="timeline-step active">AI Assessment</span>
+                        <span class="timeline-step current">Administrative Review</span>
+                        <span class="timeline-step">Final Decision</span>
+                        <span class="timeline-step">Email Notification</span>
+                    </div>
+
+                    <div style="margin-top: 1rem;" class="muted-box">
+                        The information below is based on the application record stored in the system.
+                        If any detail looks incorrect, the applicant can return to the dashboard and review past submissions.
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel wide-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Applicant Information</h2>
+                    <p class="panel-subtitle">These are the personal details captured at the time of submission.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <span class="info-label">Full Name</span>
+                            <div class="info-value">{{ application.full_name }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Date of Birth</span>
+                            <div class="info-value">{{ application.date_of_birth }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Age</span>
+                            <div class="info-value">{{ application.age }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Gender</span>
+                            <div class="info-value">{{ application.gender }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Marital Status</span>
+                            <div class="info-value">{{ application.marital_status }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Education Level</span>
+                            <div class="info-value">{{ application.education_level }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Employment Type</span>
+                            <div class="info-value">{{ application.employment_type }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Monthly Income</span>
+                            <div class="info-value">₦{{ '{:,.2f}'.format(application.monthly_income or 0) }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">BVN Number</span>
+                            <div class="info-value">{{ application.bvn_number }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">NIN Number</span>
+                            <div class="info-value">{{ application.nin_number }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">City</span>
+                            <div class="info-value">{{ application.city }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Address</span>
+                            <div class="info-value">{{ application.address }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel wide-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Loan Information</h2>
+                    <p class="panel-subtitle">The request details submitted with the application.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <span class="info-label">Loan Amount Requested</span>
+                            <div class="info-value">₦{{ '{:,.2f}'.format(application.loan_amount_requested or 0) }}</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Loan Tenure</span>
+                            <div class="info-value">{{ application.loan_tenure_months }} months</div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Existing Loan Defaults</span>
+                            <div class="info-value">
+                                {% if application.existing_loan_defaults in [1, true, '1', 'True', 'true'] %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-label">Existing Loan Amount</span>
+                            <div class="info-value">₦{{ '{:,.2f}'.format(application.existing_loan_amount or 0) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel wide-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Evaluation Factors</h2>
+                    <p class="panel-subtitle">The system factors already attached to this application record.</p>
+                </div>
+                <div class="panel-body">
+                    {% if key_factors and key_factors|length > 0 %}
+                        <div class="factor-list">
+                            {% for factor in key_factors %}
+                                <div class="factor-item">
+                                    <div class="factor-dot"></div>
+                                    <div class="factor-text">{{ factor }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="muted-box">
+                            No evaluation factors were stored for this application.
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="panel wide-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Result Summary</h2>
+                    <p class="panel-subtitle">A short explanation based on the current prediction output.</p>
+                </div>
+                <div class="panel-body">
+                    {% if prediction and prediction.denial_reason %}
+                        <div class="reason-box">
+                            {{ prediction.denial_reason }}
+                        </div>
+                    {% else %}
+                        <div class="muted-box">
+                            {% if predicted_class|lower == 'eligible' %}
+                                The application currently meets the system's eligibility requirements.
+                            {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}
+                                The application requires additional administrative review before a final decision can be made.
+                            {% else %}
+                                The submitted information does not currently meet the system's eligibility requirements.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="footer-actions">
+                        <a href="{{ url_for('main.admin_dashboard') if current_user.is_admin() else url_for('main.index') }}" class="btn-leps btn-secondary-leps">Back to Dashboard</a>
+                        <a href="{{ url_for('main.application_submitted', reference_id=application.reference_id) }}" class="btn-leps btn-primary-leps">View Submitted Summary</a>
+                    </div>
+                </div>
+            </section>
         </div>
-
     </div>
-
 </div>
-
 {% endblock %}
