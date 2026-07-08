@@ -43,3 +43,27 @@ def create_app(config_name='default'):
 def load_user(user_id):
     from app.models import User
     return User.query.get(int(user_id))
+    
+    #Admin User Creation
+
+def create_admin():
+    admin_email = os.getenv("ADMIN_EMAIL")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+
+    if not admin_email or not admin_password:
+        return
+
+    admin = User.query.filter_by(email=admin_email).first()
+
+    if not admin:
+        admin = User(
+            full_name=os.getenv("ADMIN_NAME", "Admin User"),
+            email=admin_email,
+            phone_number=os.getenv("ADMIN_PHONE", ""),
+            role="admin"
+        )
+
+        admin.set_password(admin_password)
+
+        db.session.add(admin)
+        db.session.commit()
