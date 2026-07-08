@@ -378,16 +378,16 @@ def predict():
     db.session.add(prediction)
     db.session.commit()
 
-    try:
-        from app.email_service import send_result_email
-        send_result_email(
-            to_email=current_user.email,
-            applicant_name=data['full_name'],
-            application=application,
-            prediction=prediction
-        )
-    except Exception:
-        pass
+    #try:
+        #from app.email_service import send_result_email
+        #send_result_email(
+            #to_email=current_user.email,
+            #applicant_name=data['full_name'],
+            #application=application,
+            #prediction=prediction
+        #)
+    #except Exception:
+        #pass
 
     return jsonify({
         'application_id': reference_id,
