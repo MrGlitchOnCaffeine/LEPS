@@ -28,14 +28,11 @@
         --text-body: #3A3D48;
         --text-muted: #6B6E7A;
         --text-faint: #9A9DA8;
-        --bg: var(--off-white);
-        --surface: var(--white);
-        --border: var(--border-warm);
     }
 
     .app-score-page {
         padding: clamp(1rem, 2vw, 2rem) 0 3rem;
-        background: linear-gradient(180deg, var(--bg), var(--warm-white));
+        background: linear-gradient(180deg, var(--off-white), var(--warm-white));
     }
 
     .score-shell {
@@ -46,7 +43,7 @@
     .score-hero {
         position: relative;
         overflow: hidden;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-warm);
         border-radius: 20px;
         background: linear-gradient(180deg, var(--warm-white), rgba(255, 255, 255, 0.98));
         box-shadow: 0 10px 28px rgba(30, 32, 40, 0.06);
@@ -112,7 +109,7 @@
     .meta-card {
         border-radius: 18px;
         border: 1px solid rgba(214, 206, 184, 0.95);
-        background: var(--surface);
+        background: var(--surface, var(--white));
         box-shadow: 0 8px 24px rgba(30, 32, 40, 0.05);
     }
 
@@ -139,7 +136,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: .9rem;
+        gap: .85rem;
     }
 
     .gauge-wrap {
@@ -182,8 +179,8 @@
         justify-content: center;
         align-items: center;
         text-align: center;
-        width: clamp(138px, 38vw, 190px);
-        height: clamp(138px, 38vw, 190px);
+        width: clamp(142px, 38vw, 194px);
+        height: clamp(142px, 38vw, 194px);
         padding: 12px;
         border-radius: 50%;
         background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.99), rgba(253,251,246,0.98));
@@ -193,7 +190,7 @@
     }
 
     .gauge-value {
-        font-size: clamp(1.85rem, 6vw, 2.55rem);
+        font-size: clamp(1.9rem, 6vw, 2.6rem);
         font-weight: 800;
         line-height: 1;
         letter-spacing: -0.03em;
@@ -201,14 +198,13 @@
     }
 
     .gauge-label {
-        margin-top: 7px;
-        font-size: clamp(.68rem, 1.9vw, .92rem);
-        line-height: 1.15;
+        font-size: clamp(.78rem, 2vw, .98rem);
+        line-height: 1.2;
         color: var(--text-muted);
         font-weight: 800;
         text-align: center;
-        max-width: 9.5rem;
-        white-space: normal;
+        margin-top: 8px;
+        max-width: 100%;
     }
 
     .decision-badge {
@@ -248,6 +244,56 @@
         color: var(--text-body);
         text-align: center;
         margin: 0 auto;
+    }
+
+    .actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        margin-top: 1rem;
+        justify-content: center;
+    }
+
+    .btn-leps {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .85rem 1.1rem;
+        border-radius: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+        min-height: 48px;
+    }
+
+    .btn-leps:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .btn-primary-leps {
+        background: var(--saffron);
+        color: #fff;
+        border-color: var(--saffron);
+    }
+
+    .btn-primary-leps:hover {
+        background: var(--saffron-hover);
+        border-color: var(--saffron-hover);
+        color: #fff;
+    }
+
+    .btn-secondary-leps {
+        background: var(--white);
+        color: var(--slate);
+        border-color: var(--border-mid);
+    }
+
+    .btn-secondary-leps:hover {
+        background: var(--warm-white);
+        color: var(--slate);
     }
 
     .meta-title {
@@ -350,9 +396,8 @@
         }
 
         .gauge-label {
-            font-size: .68rem;
-            line-height: 1.12;
-            max-width: 7.5rem;
+            font-size: .72rem;
+            line-height: 1.15;
         }
 
         .meta-row {
@@ -364,6 +409,15 @@
         .meta-value {
             text-align: left;
             font-size: .95rem;
+        }
+
+        .actions-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-leps {
+            width: 100%;
         }
     }
 </style>
@@ -422,6 +476,11 @@
                             This score is generated from the submitted application details and represents the system's
                             evaluation outcome. It is not the final administrative decision.
                         </p>
+
+                        <div class="actions-row">
+                            <a href="{{ url_for('main.application_details', reference_id=application.reference_id) }}" class="btn-leps btn-primary-leps">View Full Application</a>
+                            <a href="{{ url_for('main.index') }}" class="btn-leps btn-secondary-leps">Back to Dashboard</a>
+                        </div>
                     </div>
                 </div>
 
@@ -473,15 +532,6 @@
                         </div>
                     </div>
                 </aside>
-            </div>
-            <div class="text-center mt-4">
-                <a
-                    href="{{ url_for('main.application_details', reference_id=application.reference_id) }}"
-                    class="btn btn-warning btn-lg px-4">
-
-                    View Full Application
-
-                </a>
             </div>
         </section>
     </div>
