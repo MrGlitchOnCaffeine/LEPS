@@ -30,21 +30,7 @@ def create_app(config_name='default'):
     mail.init_app(app)
     csrf.init_app(app)
 
-    from app.routes import main
-    app.register_blueprint(main)
-
-    with app.app_context():
-        db.create_all()
-
-    return app
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    from app.models import User
-    return User.query.get(int(user_id))
-    
-    #Admin User Creation
+#Admin User Creation
 
 def create_admin():
     admin_email = os.getenv("ADMIN_EMAIL")
@@ -67,3 +53,20 @@ def create_admin():
 
         db.session.add(admin)
         db.session.commit()
+
+    from app.routes import main
+    app.register_blueprint(main)
+
+    with app.app_context():
+        db.create_all()
+        create_admin()
+
+    return app
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import User
+    return User.query.get(int(user_id))
+    
+    
