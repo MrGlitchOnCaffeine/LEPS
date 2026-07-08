@@ -442,23 +442,3 @@ def history():
 
     return render_template('history.html', applications=applications)
 
-@main.route("/setup-admin")
-def setup_admin():
-    existing = User.query.filter_by(email="admin@leps.com").first()
-
-    if existing:
-        return "Admin already exists."
-
-    admin = User(
-        full_name="Admin User",
-        email="admin@leps.com",
-        phone_number="08000000000",
-        role="admin"
-    )
-
-    admin.set_password("Admin1234")
-
-    db.session.add(admin)
-    db.session.commit()
-
-    return "Admin created successfully!"
