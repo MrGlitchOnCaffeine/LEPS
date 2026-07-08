@@ -1,13 +1,446 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Application Submitted</h2>
+<style>
+    .app-score-page {
+        padding: 2rem 0 3rem;
+    }
 
-    <p>Your application has been received successfully.</p>
+    .score-shell {
+        max-width: 980px;
+        margin: 0 auto;
+    }
 
-    <p><strong>Reference ID:</strong> {{ application.reference_id }}</p>
+    .score-hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96));
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+        padding: 1.75rem;
+        margin-bottom: 1.25rem;
+    }
 
-    <p><strong>Status:</strong> {{ application.status }}</p>
+    .score-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 36%),
+                    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.07), transparent 30%);
+        pointer-events: none;
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .4rem .75rem;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.08);
+        color: #2563eb;
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+        margin-bottom: 1rem;
+    }
+
+    .hero-title {
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        line-height: 1.1;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: .65rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-subtitle {
+        max-width: 60ch;
+        color: #475569;
+        font-size: 1rem;
+        line-height: 1.65;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .score-grid {
+        display: grid;
+        grid-template-columns: 1.15fr .85fr;
+        gap: 1rem;
+        align-items: stretch;
+        position: relative;
+        z-index: 1;
+    }
+
+    .score-card,
+    .meta-card {
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .score-card {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 360px;
+    }
+
+    .meta-card {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: .9rem;
+    }
+
+    .gauge-wrap {
+        width: min(100%, 320px);
+        display: grid;
+        place-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .gauge {
+        width: 280px;
+        height: 280px;
+        transform: rotate(-90deg);
+        overflow: visible;
+        filter: drop-shadow(0 10px 25px rgba(15, 23, 42, 0.08));
+    }
+
+    .gauge-bg {
+        fill: none;
+        stroke: #e2e8f0;
+        stroke-width: 16;
+    }
+
+    .gauge-progress {
+        fill: none;
+        stroke: url(#scoreGradient);
+        stroke-width: 16;
+        stroke-linecap: round;
+        stroke-dasharray: 0 999;
+        stroke-dashoffset: 0;
+        transition: stroke-dasharray 1.2s ease;
+    }
+
+    .gauge-center {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.98), rgba(248,250,252,0.98));
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .gauge-value {
+        font-size: 2.35rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+    }
+
+    .gauge-label {
+        margin-top: .35rem;
+        font-size: .88rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .decision-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem .85rem;
+        border-radius: 999px;
+        font-size: .9rem;
+        font-weight: 700;
+        margin-bottom: .8rem;
+    }
+
+    .decision-eligible {
+        background: rgba(16, 185, 129, 0.12);
+        color: #047857;
+    }
+
+    .decision-review {
+        background: rgba(245, 158, 11, 0.12);
+        color: #b45309;
+    }
+
+    .decision-noteligible {
+        background: rgba(239, 68, 68, 0.12);
+        color: #b91c1c;
+    }
+
+    .score-note {
+        max-width: 48ch;
+        font-size: .96rem;
+        line-height: 1.65;
+        color: #475569;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .meta-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: .15rem;
+    }
+
+    .meta-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: .85rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .meta-row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .meta-label {
+        font-size: .82rem;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .meta-value {
+        font-size: .98rem;
+        color: #0f172a;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .meta-help {
+        font-size: .85rem;
+        color: #64748b;
+        margin-top: .25rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.1);
+        color: #1d4ed8;
+        font-weight: 700;
+        font-size: .84rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .score-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .score-card {
+            min-height: 330px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .app-score-page {
+            padding: 1rem 0 2rem;
+        }
+
+        .score-hero {
+            padding: 1.1rem;
+            border-radius: 20px;
+        }
+
+        .score-card,
+        .meta-card {
+            border-radius: 18px;
+            padding: 1rem;
+        }
+
+        .score-card {
+            min-height: 310px;
+        }
+
+        .gauge {
+            width: 230px;
+            height: 230px;
+        }
+
+        .gauge-center {
+            width: 150px;
+            height: 150px;
+        }
+
+        .gauge-value {
+            font-size: 1.95rem;
+        }
+    }
+</style>
+
+<div class="app-score-page">
+    <div class="container score-shell">
+        <section class="score-hero">
+            <div class="eyebrow">Application Submitted</div>
+            <h1 class="hero-title">Application Score</h1>
+            <p class="hero-subtitle">
+                Your submitted application has been evaluated using the current system assessment.
+                The score below reflects the model's output based on the information provided during submission.
+            </p>
+
+            {% set predicted_class = prediction.predicted_class if prediction else '' %}
+            {% set score_value = prediction.eligibility_percentage if prediction else 0 %}
+            {% set loan_amount = prediction.estimated_loan_amount if prediction and prediction.estimated_loan_amount is not none else None %}
+            {% set submitted_on = prediction.prediction_date if prediction and prediction.prediction_date else None %}
+            {% set status_text = application.status if application and application.status else 'Pending' %}
+
+            <div class="score-grid">
+                <div class="score-card">
+                    <div class="gauge-wrap position-relative">
+                        <svg class="gauge" viewBox="0 0 220 220" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#60a5fa"></stop>
+                                    <stop offset="50%" stop-color="#34d399"></stop>
+                                    <stop offset="100%" stop-color="#10b981"></stop>
+                                </linearGradient>
+                            </defs>
+                            <circle class="gauge-bg" cx="110" cy="110" r="82"></circle>
+                            <circle class="gauge-progress" cx="110" cy="110" r="82" data-score="{{ score_value }}"></circle>
+                        </svg>
+                        <div class="gauge-center">
+                            <div>
+                                <div class="gauge-value" data-score-value>{{ score_value }}%</div>
+                                <div class="gauge-label">Eligibility Score</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="decision-badge
+                        {% if predicted_class|lower == 'eligible' %}decision-eligible
+                        {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}decision-review
+                        {% else %}decision-noteligible
+                        {% endif %}">
+                        {% if predicted_class|lower == 'eligible' %}
+                            Eligible
+                        {% elif predicted_class|lower in ['review', 'requires review', 'pending review'] %}
+                            Requires Review
+                        {% else %}
+                            Not Eligible
+                        {% endif %}
+                    </div>
+
+                    <p class="score-note">
+                        This score is generated from the submitted application details and represents the system's
+                        evaluation outcome. It is not the final administrative decision.
+                    </p>
+                </div>
+
+                <aside class="meta-card">
+                    <div>
+                        <div class="meta-title">Application Summary</div>
+                        <div class="meta-help">Key details from the submission are shown below.</div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div>
+                            <div class="meta-label">Reference ID</div>
+                        </div>
+                        <div class="meta-value">{{ application.reference_id }}</div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div>
+                            <div class="meta-label">Current Status</div>
+                        </div>
+                        <div class="meta-value">
+                            <span class="status-pill">{{ status_text }}</span>
+                        </div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div>
+                            <div class="meta-label">Date Submitted</div>
+                        </div>
+                        <div class="meta-value">
+                            {% if submitted_on %}
+                                {{ submitted_on.strftime('%d %b %Y, %I:%M %p') }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div>
+                            <div class="meta-label">Estimated Loan Amount</div>
+                        </div>
+                        <div class="meta-value">
+                            {% if loan_amount is not none %}
+                                ₦{{ '{:,.2f}'.format(loan_amount) }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </div>
 </div>
+
+<script>
+(function () {
+    var progressCircle = document.querySelector('.gauge-progress');
+    var scoreValue = document.querySelector('[data-score-value]');
+    if (!progressCircle || !scoreValue) return;
+
+    var score = parseFloat(progressCircle.getAttribute('data-score')) || 0;
+    var radius = 82;
+    var circumference = 2 * Math.PI * radius;
+
+    progressCircle.style.strokeDasharray = '0 ' + circumference;
+    progressCircle.style.strokeDashoffset = '0';
+
+    function animateGauge() {
+        var start = null;
+        var duration = 1100;
+
+        function step(timestamp) {
+            if (!start) start = timestamp;
+            var progress = Math.min((timestamp - start) / duration, 1);
+            var current = score * progress;
+            var dash = (current / 100) * circumference;
+
+            progressCircle.style.strokeDasharray = dash + ' ' + circumference;
+            scoreValue.textContent = current.toFixed(current % 1 === 0 ? 0 : 1) + '%';
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                scoreValue.textContent = score.toFixed(score % 1 === 0 ? 0 : 1) + '%';
+            }
+        }
+
+        window.requestAnimationFrame(step);
+    }
+
+    animateGauge();
+})();
+</script>
 {% endblock %}
