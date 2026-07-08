@@ -15,21 +15,6 @@ login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
 
-def create_app(config_name='default'):
-    import os
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    app = Flask(
-        __name__,
-        template_folder=os.path.join(root, 'templates'),
-        static_folder=os.path.join(root, 'static')
-    )
-    app.config.from_object(config[config_name])
-
-    db.init_app(app)
-    login_manager.init_app(app)
-    mail.init_app(app)
-    csrf.init_app(app)
-
 #Admin User Creation
 
 def create_admin():
@@ -53,6 +38,21 @@ def create_admin():
 
         db.session.add(admin)
         db.session.commit()
+
+def create_app(config_name='default'):
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(root, 'templates'),
+        static_folder=os.path.join(root, 'static')
+    )
+    app.config.from_object(config[config_name])
+
+    db.init_app(app)
+    login_manager.init_app(app)
+    mail.init_app(app)
+    csrf.init_app(app)
 
     from app.routes import main
     app.register_blueprint(main)
