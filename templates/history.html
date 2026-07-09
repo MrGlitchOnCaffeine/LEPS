@@ -4,6 +4,66 @@
 {% block content %}
 <section class="leps-history-section">
     <div class="container">
+        
+        {% set ns = namespace(total=0, eligible=0, pending=0, denied=0) %}
+{% for app in applications %}
+    {% set ns.total = ns.total + 1 %}
+    {% if app.prediction and app.prediction.predicted_class %}
+        {% if app.prediction.predicted_class|lower == 'eligible' %}
+            {% set ns.eligible = ns.eligible + 1 %}
+        {% elif app.prediction.predicted_class|lower == 'not eligible' %}
+            {% set ns.denied = ns.denied + 1 %}
+        {% else %}
+            {% set ns.pending = ns.pending + 1 %}
+        {% endif %}
+    {% else %}
+        {% set ns.pending = ns.pending + 1 %}
+    {% endif %}
+{% endfor %}
+
+<div class="history-dashboard">
+    <div class="history-summary-grid">
+        <div class="history-summary-card">
+            <span class="history-summary-label">Total Applications</span>
+            <div class="history-summary-value">{{ ns.total }}</div>
+        </div>
+
+        <div class="history-summary-card eligible">
+            <span class="history-summary-label">Eligible</span>
+            <div class="history-summary-value">{{ ns.eligible }}</div>
+        </div>
+
+        <div class="history-summary-card pending">
+            <span class="history-summary-label">Pending / Review</span>
+            <div class="history-summary-value">{{ ns.pending }}</div>
+        </div>
+
+        <div class="history-summary-card denied">
+            <span class="history-summary-label">Not Eligible</span>
+            <div class="history-summary-value">{{ ns.denied }}</div>
+        </div>
+    </div>
+
+    <div class="history-toolbar">
+        <div class="history-search-group">
+            <label for="historySearch" class="history-toolbar-label">Search</label>
+            <input
+                type="search"
+                id="historySearch"
+                class="form-control history-search-input"
+                placeholder="Search by Reference ID, status, or score...">
+        </div>
+
+        <div class="history-search-group">
+            <label for="historyStatusFilter" class="history-toolbar-label">Filter by Status</label>
+            <select id="historyStatusFilter" class="form-control history-search-input">
+                <option value="all">All</option>
+                <option value="eligible">Eligible</option>
+                <option value="pending">Pending / Review</option>
+                <option value="not-eligible">Not Eligible</option>
+            </select>
+        </div>
+    </div>
 
         <div class="page-header">
             <h2 class="page-title">Application History</h2>
