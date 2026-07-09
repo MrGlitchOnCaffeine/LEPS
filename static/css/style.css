@@ -1874,3 +1874,26 @@ button, a, [role="button"] {
     .result-next-title { font-size: 0.82rem; }
     .result-next-desc { font-size: 0.74rem; }
 }
+
+/* ==========================================
+   History Page – Clickable Reference ID
+========================================== */
+
+.history-reference-link {
+    color: var(--slate);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    transition: color .25s ease;
+}
+
+.history-reference-link:hover {
+    color: var(--saffron);
+    text-decoration: underline;
+}
+
+.history-reference-link:focus {
+    outline: none;
+    color: var(--saffron);
+    text-decoration: underline;
+}
