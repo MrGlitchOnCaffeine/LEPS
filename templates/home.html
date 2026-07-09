@@ -1,1 +1,120 @@
-#home
+{% extends "base.html" %}
+{% block title %}Home | Loan Eligibility Prediction System{% endblock %}
+
+{% block content %}
+<section class="leps-hero home-hero">
+    <div class="container hero-inner">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7 text-center hero-copy">
+                <span class="hero-eyebrow">Account Home</span>
+
+                {% if home_data.has_applications %}
+                    <h1 class="hero-headline">
+                        Welcome back, {{ home_data.user_name }}.
+                    </h1>
+                    <p class="hero-sub">
+                        Continue where you left off. Start a new loan application or review your previous results.
+                    </p>
+                {% else %}
+                    <h1 class="hero-headline">
+                        Welcome, {{ home_data.user_name }}.
+                    </h1>
+                    <p class="hero-sub">
+                        Your account is ready. Start your first loan application and receive your eligibility result.
+                    </p>
+                {% endif %}
+
+                <div class="hero-cta-group">
+                    <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-lg">
+                        New Application
+                    </a>
+                    <a href="{{ url_for('main.history') }}" class="btn btn-outline-light btn-lg">
+                        View History
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                <div class="home-preview-panel">
+                    {% if home_data.latest_application %}
+                        {% set app = home_data.latest_application %}
+                        {% set pred = app.prediction %}
+
+                        <div class="home-preview-card">
+                            <div class="home-preview-header">
+                                <div>
+                                    <div class="home-preview-label">Latest Application</div>
+                                    <h3 class="home-preview-title">{{ app.reference_id }}</h3>
+                                </div>
+
+                                <span class="home-preview-status">{{ app.status }}</span>
+                            </div>
+
+                            <div class="home-preview-grid">
+                                <div class="home-preview-item">
+                                    <span class="home-preview-item-label">Submitted</span>
+                                    <span class="home-preview-item-value">
+                                        {{ app.application_date.strftime('%d %b %Y') }}
+                                    </span>
+                                </div>
+
+                                <div class="home-preview-item">
+                                    <span class="home-preview-item-label">Eligibility Score</span>
+                                    <span class="home-preview-item-value">
+                                        {% if pred and pred.eligibility_percentage is not none %}
+                                            {{ pred.eligibility_percentage }}%
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="home-preview-item">
+                                    <span class="home-preview-item-label">Estimated Loan</span>
+                                    <span class="home-preview-item-value">
+                                        {% if pred and pred.estimated_loan_amount is not none %}
+                                            ₦{{ '{:,.2f}'.format(pred.estimated_loan_amount) }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="home-preview-item">
+                                    <span class="home-preview-item-label">Status</span>
+                                    <span class="home-preview-item-value">{{ app.status }}</span>
+                                </div>
+                            </div>
+
+                            <div class="home-preview-actions">
+                                <a href="{{ url_for('main.application_details', reference_id=app.reference_id) }}"
+                                   class="btn btn-gold btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="home-preview-card home-preview-empty">
+                            <div class="home-preview-label">No Applications Yet</div>
+                            <h3 class="home-preview-title">Your first application will appear here.</h3>
+                            <p class="home-preview-text">
+                                Submit your first loan eligibility application to see your results, status, and history in one place.
+                            </p>
+
+                            <div class="home-preview-actions">
+                                <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-sm">
+                                    Start First Application
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
