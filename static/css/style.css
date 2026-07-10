@@ -547,6 +547,7 @@ button, a, [role="button"] {
 .hero-inner {
     position: relative;
     z-index: 1;
+    text-align: center;
 }
 
 .hero-eyebrow {
@@ -586,6 +587,9 @@ button, a, [role="button"] {
     line-height: 1.78;
     margin-bottom: 2rem;
     max-width: 480px;
+    
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hero-login-note {
