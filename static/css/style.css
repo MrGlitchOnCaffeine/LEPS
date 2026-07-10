@@ -519,8 +519,16 @@ button, a, [role="button"] {
    LANDING PAGE
    ------------------------------------------------------------ */
 .leps-hero {
-    background-color: var(--slate);
-    padding: 5rem 0 0;
+    background:
+        linear-gradient(
+            180deg,
+            #242837 0%,
+            #202430 45%,
+            #1b1f2a 100%
+        );
+
+    padding: 5.5rem 0 0;
+
     position: relative;
     overflow: hidden;
 }
@@ -532,7 +540,7 @@ button, a, [role="button"] {
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(196, 154, 26, 0.08) 0%, transparent 65%);
+    background: radial-gradient(circle,rgba(196,154,26,.035) 0%,transparent 68%);
     pointer-events: none;
 }
 
@@ -552,12 +560,24 @@ button, a, [role="button"] {
     display: block;
 }
 
-.hero-headline {
-    font-family: var(--font-display);
-    font-size: clamp(1.85rem, 4vw, 3rem);
-    color: #fff;
-    line-height: 1.18;
-    margin-bottom: 1.35rem;
+.hero-headline{
+
+    font-family:var(--font-display);
+
+    font-size:clamp(2.2rem,4vw,3.4rem);
+
+    line-height:1.08;
+
+    letter-spacing:-0.03em;
+
+    margin-bottom:1rem;
+
+    color:#fff;
+
+    max-width:650px;
+
+    margin-left:auto;
+    margin-right:auto;
 }
 
 .hero-sub {
