@@ -6,12 +6,11 @@
     <div class="container hero-inner">
 
             <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7 text-center hero-copy home-hero-copy">
+        <div class="col-lg-7 col-xl-6 text-center hero-copy home-hero-copy">
 
             {% if home_data.has_applications %}
                 <h1 class="hero-headline home-title">
-                    Welcome back,<br>
-                    {{ home_data.user_name }}.
+                    Welcome back, {{ home_data.user_name }}.
                 </h1>
                 <p class="hero-sub home-subtitle">
                     Continue where you left off. Start a new application or review your previous submissions.
@@ -41,7 +40,7 @@
         <div class="col-lg-9 col-xl-8">
             <div class="home-latest-wrap">
                 <div class="home-latest-head">
-                    <div class="home-section-label">Latest Application</div>
+                    <div class="home-section-label">Most Recent Application</div>
                     <p class="home-section-subtitle">
                         Your most recent loan eligibility application.
                     </p>
@@ -113,7 +112,7 @@
                 {% else %}
                     <div class="home-latest-content">
                         <p class="home-empty-message">
-                            You have not submitted any loan applications yet. Start your first application to see your results here.
+                            Your application history will appear here after your first submission. When you’re ready, begin a new eligibility assessment below.
                         </p>
 
                         <div class="home-latest-actions">
