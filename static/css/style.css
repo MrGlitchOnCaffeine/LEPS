@@ -2378,14 +2378,39 @@ button, a, [role="button"] {
 
 .home-latest-actions{
     margin-top:2rem;
+    padding-top:1.5rem;
+    border-top:1px solid var(--border-warm);
+
+    display:flex;
+    justify-content:flex-end;
 }
 
-.home-empty-message{
-    margin:0;
+.home-view-link{
+    display:inline-flex;
+    align-items:center;
 
-    line-height:1.8;
+    font-size:.95rem;
+    font-weight:700;
 
-    color:var(--text-body);
+    color:var(--navy);
+
+    text-decoration:none;
+
+    transition:.2s ease;
+}
+
+.home-view-link::after{
+    content:"→";
+    margin-left:.45rem;
+    transition:margin-left .2s ease;
+}
+
+.home-view-link:hover{
+    color:var(--gold);
+}
+
+.home-view-link:hover::after{
+    margin-left:.7rem;
 }
 
 /* ----------------------------------------------------------
