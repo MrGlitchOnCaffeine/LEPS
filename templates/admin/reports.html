@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}Reports | Loan Eligibility Prediction System{% endblock %}
+
+{% block content %}
+<section class="leps-admin-section">
+    <div class="container">
+
+        <div class="page-header">
+            <h2 class="page-title">Reports</h2>
+            <p class="page-subtitle">Summary statistics, approval rates, loan metrics, and model performance.</p>
+        </div>
+
+        <!-- Overview stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-value">{{ total_applications }}</span>
+                    <span class="stat-label">Total Applications</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-value">{{ total_users }}</span>
+                    <span class="stat-label">Registered Applicants</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card stat-eligible">
+                    <span class="stat-value">{{ approval_rate }}%</span>
+                    <span class="stat-label">Approval Rate</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card stat-not-eligible">
+                    <span class="stat-value">{{ denial_rate }}%</span>
+                    <span class="stat-label">Denial Rate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eligibility breakdown + loan metrics -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-6">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Eligibility Breakdown</h3>
+                    </div>
+                    <div class="reports-inner">
+                        <div class="reports-breakdown-row">
+                            <div class="reports-breakdown-label">
+                                <span class="badge-result eligible-badge">Eligible</span>
+                            </div>
+                            <div class="reports-breakdown-bar-wrap">
+                                <div class="reports-breakdown-bar reports-bar-eligible"
+                                     style="width: {{ approval_rate }}%"></div>
+                            </div>
+                            <div class="reports-breakdown-count">
+                                {{ eligible_count }}
+                                <span class="reports-breakdown-pct">({{ approval_rate }}%)</span>
+                            </div>
+                        </div>
+                        <div class="reports-breakdown-row">
+                            <div class="reports-breakdown-label">
+                                <span class="badge-result not-eligible-badge">Not Eligible</span>
+                            </div>
+                            <div class="reports-breakdown-bar-wrap">
+                                <div class="reports-breakdown-bar reports-bar-denied"
+                                     style="width: {{ denial_rate }}%"></div>
+                            </div>
+                            <div class="reports-breakdown-count">
+                                {{ not_eligible_count }}
+                                <span class="reports-breakdown-pct">({{ denial_rate }}%)</span>
+                            </div>
+                        </div>
+                        <div class="reports-breakdown-row">
+                            <div class="reports-breakdown-label">
+                                <span class="badge-result review-badge">Under Review</span>
+                            </div>
+                            <div class="reports-breakdown-bar-wrap">
+                                <div class="reports-breakdown-bar reports-bar-review"
+                                     style="width: {{ review_rate }}%"></div>
+                            </div>
+                            <div class="reports-breakdown-count">
+                                {{ under_review_count }}
+                                <span class="reports-breakdown-pct">({{ review_rate }}%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Loan Amount Metrics</h3>
+                    </div>
+                    <div class="reports-inner">
+                        <dl class="reports-metric-list">
+                            <div class="reports-metric-row">
+                                <dt class="reports-metric-label">Average Loan Requested</dt>
+                                <dd class="reports-metric-value">
+                                    &#8358;{{ "{:,.0f}".format(avg_loan) }}
+                                </dd>
+                            </div>
+                            <div class="reports-metric-row">
+                                <dt class="reports-metric-label">Highest Loan Requested</dt>
+                                <dd class="reports-metric-value">
+                                    &#8358;{{ "{:,.0f}".format(max_loan) }}
+                                </dd>
+                            </div>
+                            <div class="reports-metric-row">
+                                <dt class="reports-metric-label">Lowest Loan Requested</dt>
+                                <dd class="reports-metric-value">
+                                    &#8358;{{ "{:,.0f}".format(min_loan) }}
+                                </dd>
+                            </div>
+                            <div class="reports-metric-row">
+                                <dt class="reports-metric-label">Average Monthly Income</dt>
+                                <dd class="reports-metric-value">
+                                    &#8358;{{ "{:,.0f}".format(avg_income) }}
+                                </dd>
+                            </div>
+                            <div class="reports-metric-row">
+                                <dt class="reports-metric-label">Average Eligibility Score</dt>
+                                <dd class="reports-metric-value">{{ avg_score }}%</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Application status + Employment breakdown -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">By Admin Status</h3>
+                    </div>
+                    <div class="reports-inner">
+                        {% if status_breakdown %}
+                            {% for status, count in status_breakdown %}
+                                <div class="reports-tag-row">
+                                    <span class="reports-tag-label">{{ status }}</span>
+                                    <span class="reports-tag-count mono">{{ count }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="reports-empty-note">No status data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">By Employment Type</h3>
+                    </div>
+                    <div class="reports-inner">
+                        {% if employment_breakdown %}
+                            {% set emp_total = employment_breakdown | sum(attribute=1) %}
+                            {% for emp_type, count in employment_breakdown %}
+                                <div class="reports-tag-row">
+                                    <span class="reports-tag-label">{{ emp_type }}</span>
+                                    <span class="reports-tag-count mono">{{ count }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="reports-empty-note">No employment data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">By Education Level</h3>
+                    </div>
+                    <div class="reports-inner">
+                        {% if education_breakdown %}
+                            {% for edu_level, count in education_breakdown %}
+                                <div class="reports-tag-row">
+                                    <span class="reports-tag-label">{{ edu_level }}</span>
+                                    <span class="reports-tag-count mono">{{ count }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="reports-empty-note">No education data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Model performance -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Model Performance</h3>
+            </div>
+            <div class="reports-inner">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="reports-model-block">
+                            <span class="reports-model-label">Active Model</span>
+                            <span class="reports-model-value mono">{{ model_name }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="reports-model-block">
+                            <span class="reports-model-label">Avg Eligibility Score</span>
+                            <span class="reports-model-value mono">{{ avg_score }}%</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="reports-model-block">
+                            <span class="reports-model-label">Predictions Issued</span>
+                            <span class="reports-model-value mono">{{ total_applications }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="reports-model-block">
+                            <span class="reports-model-label">Training Dataset</span>
+                            <span class="reports-model-value mono">10,000 records</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="reports-model-note">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Accuracy, Precision, Recall, F1, and ROC-AUC metrics are printed to console
+                    during model training. Re-run <span class="mono">train_model.py</span> to
+                    view the full evaluation report.
+                </p>
+            </div>
+        </div>
+
+        <!-- Recent admin activity -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Recent Admin Activity</h3>
+            </div>
+            {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table leps-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Description</th>
+                                <th>Email Sent</th>
+                                <th>Timestamp</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                                <tr>
+                                    <td class="mono">{{ log.action_type }}</td>
+                                    <td>{{ log.action_description }}</td>
+                                    <td>
+                                        {% if log.email_sent %}
+                                            <span class="badge-result eligible-badge">Yes</span>
+                                        {% else %}
+                                            <span class="reports-no-email">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="mono">
+                                        {{ log.timestamp.strftime('%d %b %Y, %H:%M') }}
+                                    </td>
+                                    <td class="mono">{{ log.ip_address or 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-clipboard-data empty-icon"></i>
+                    <h4 class="empty-title">No admin activity yet</h4>
+                    <p class="empty-body">Admin actions will appear here once status updates are made.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

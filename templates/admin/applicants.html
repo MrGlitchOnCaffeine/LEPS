@@ -34,7 +34,7 @@
         <div class="admin-card">
             <div class="admin-card-header">
                 <h3 class="admin-card-title">
-                    {{ applicants | length }} Applicant{{ 's' if applicants | length != 1 }}
+                    {{ pagination.total }} Applicant{{ 's' if pagination.total != 1 }}
                 </h3>
             </div>
 
@@ -48,6 +48,7 @@
                                 <th>Phone Number</th>
                                 <th>Registered</th>
                                 <th>Last Login</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,11 +65,49 @@
                                             Never
                                         {% endif %}
                                     </td>
+                                    <td>
+                                        <a href="{{ url_for('main.admin_edit_applicant', user_id=applicant.id) }}"
+                                           class="btn btn-sm btn-outline-navy">
+                                            Edit
+                                        </a>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination -->
+                {% if pagination.pages > 1 %}
+                    <div class="leps-pagination">
+                        {% if pagination.has_prev %}
+                            <a href="{{ url_for('main.admin_applicants', page=pagination.prev_num, search=search) }}"
+                               class="leps-page-btn">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        {% else %}
+                            <span class="leps-page-btn leps-page-disabled">
+                                <i class="bi bi-chevron-left"></i>
+                            </span>
+                        {% endif %}
+
+                        <span class="leps-page-info mono">
+                            Page {{ pagination.page }} of {{ pagination.pages }}
+                        </span>
+
+                        {% if pagination.has_next %}
+                            <a href="{{ url_for('main.admin_applicants', page=pagination.next_num, search=search) }}"
+                               class="leps-page-btn">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% else %}
+                            <span class="leps-page-btn leps-page-disabled">
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
             {% else %}
                 <div class="empty-state">
                     <i class="bi bi-people empty-icon"></i>

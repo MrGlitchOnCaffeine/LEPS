@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Edit Applicant | Loan Eligibility Prediction System{% endblock %}
+
+{% block content %}
+<section class="leps-admin-section">
+    <div class="container">
+
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Edit Applicant</h2>
+                <p class="page-subtitle">
+                    Updating record for
+                    <span class="mono">{{ applicant.full_name }}</span>
+                </p>
+            </div>
+            <a href="{{ url_for('main.admin_applicants') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Applicants
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6">
+
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Personal Information</h3>
+                    </div>
+                    <div class="p-3">
+                        <form method="POST"
+                              action="{{ url_for('main.admin_edit_applicant', user_id=applicant.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input
+                                    type="text"
+                                    class="form-control leps-input"
+                                    name="full_name"
+                                    value="{{ applicant.full_name }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input
+                                    type="text"
+                                    class="form-control leps-input"
+                                    name="phone_number"
+                                    value="{{ applicant.phone_number or '' }}"
+                                >
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input
+                                    type="email"
+                                    class="form-control leps-input"
+                                    value="{{ applicant.email }}"
+                                    disabled
+                                >
+                                <div class="form-text">
+                                    Email addresses cannot be changed from the admin panel.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Registered</label>
+                                <input
+                                    type="text"
+                                    class="form-control leps-input"
+                                    value="{{ applicant.registration_date.strftime('%d %B %Y') }}"
+                                    disabled
+                                >
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="submit" class="btn btn-navy">
+                                    Save Changes
+                                </button>
+                                <a href="{{ url_for('main.admin_applicants') }}"
+                                   class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Danger zone -->
+                <div class="admin-card admin-danger-card">
+                    <div class="admin-card-header admin-danger-header">
+                        <h3 class="admin-card-title">Danger Zone</h3>
+                    </div>
+                    <div class="p-3">
+                        <p class="admin-danger-body">
+                            Deleting this applicant will permanently remove their account and
+                            all associated loan applications. This action cannot be undone.
+                        </p>
+                        <form method="POST"
+                              action="{{ url_for('main.admin_delete_applicant', user_id=applicant.id) }}"
+                              onsubmit="return confirm('Delete {{ applicant.full_name }} and all their applications? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger-leps">
+                                <i class="bi bi-trash me-1"></i> Delete Applicant
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

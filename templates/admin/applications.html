@@ -36,9 +36,11 @@
                     <label class="form-label">Filter by Status</label>
                     <select class="form-select leps-input" name="status">
                         <option value="">All Statuses</option>
-                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Processed" {% if status_filter == 'Processed' %}selected{% endif %}>Processed</option>
-                        <option value="Reviewed" {% if status_filter == 'Reviewed' %}selected{% endif %}>Reviewed</option>
+                        <option value="Pending Review" {% if status_filter == 'Pending Review' %}selected{% endif %}>Pending Review</option>
+                        <option value="Under Review" {% if status_filter == 'Under Review' %}selected{% endif %}>Under Review</option>
+                        <option value="Eligible" {% if status_filter == 'Eligible' %}selected{% endif %}>Eligible</option>
+                        <option value="Not Eligible" {% if status_filter == 'Not Eligible' %}selected{% endif %}>Not Eligible</option>
+                        <option value="Requires Additional Information" {% if status_filter == 'Requires Additional Information' %}selected{% endif %}>Requires Additional Info</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex gap-2">
@@ -52,7 +54,7 @@
         <div class="admin-card">
             <div class="admin-card-header">
                 <h3 class="admin-card-title">
-                    {{ applications | length }} Application{{ 's' if applications | length != 1 }}
+                    {{ pagination.total }} Application{{ 's' if pagination.total != 1 }}
                 </h3>
             </div>
 
@@ -108,6 +110,36 @@
                         </tbody>
                     </table>
                 </div>
+                {% if pagination.pages > 1 %}
+                    <div class="leps-pagination">
+                        {% if pagination.has_prev %}
+                            <a href="{{ url_for('main.admin_applications', page=pagination.prev_num, search=search, result=result_filter, status=status_filter) }}"
+                               class="leps-page-btn">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        {% else %}
+                            <span class="leps-page-btn leps-page-disabled">
+                                <i class="bi bi-chevron-left"></i>
+                            </span>
+                        {% endif %}
+
+                        <span class="leps-page-info mono">
+                            Page {{ pagination.page }} of {{ pagination.pages }}
+                        </span>
+
+                        {% if pagination.has_next %}
+                            <a href="{{ url_for('main.admin_applications', page=pagination.next_num, search=search, result=result_filter, status=status_filter) }}"
+                               class="leps-page-btn">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% else %}
+                            <span class="leps-page-btn leps-page-disabled">
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
             {% else %}
                 <div class="empty-state">
                     <i class="bi bi-search empty-icon"></i>
