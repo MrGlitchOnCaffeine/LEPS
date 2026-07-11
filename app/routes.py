@@ -5,7 +5,7 @@ from app import db
 from app.models import User, LoanApplication, Prediction
 from app.validators import validate_application
 from app.decision_engine import evaluate
-
+from app.pdf_generator import generate_application_pdf
 
 def generate_reference_id():
     from datetime import date
