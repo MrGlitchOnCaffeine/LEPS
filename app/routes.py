@@ -513,6 +513,43 @@ def application_details(reference_id):
         prediction=application.prediction,
         key_factors=key_factors
     )
+    
+@main.route('/application-details/<reference_id>/pdf')
+@login_required
+def download_application_pdf(reference_id):
+    if current_user.is_admin():
+        return redirect(url_for('main.admin_dashboard'))
+
+    application = LoanApplication.query.filter_by(
+        reference_id=reference_id,
+        user_id=current_user.id
+    ).first()
+
+    if not application:
+        flash('Application not found.', 'danger')
+        return redirect(url_for('main.index'))
+
+    prediction = application.prediction
+    key_factors = []
+
+    if prediction and prediction.key_factors:
+        try:
+            key_factors = json.loads(prediction.key_factors)
+        except (TypeError, ValueError):
+            key_factors = []
+
+    pdf_buffer = generate_application_pdf(
+        application=application,
+        prediction=prediction,
+        key_factors=key_factors
+    )
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"LEPS_{application.reference_id}.pdf",
+        mimetype="application/pdf"
+    )
 
 @main.route('/history')
 @login_required
