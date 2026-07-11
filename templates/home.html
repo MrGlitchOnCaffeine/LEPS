@@ -5,125 +5,226 @@
 <section class="leps-hero home-hero">
     <div class="container hero-inner">
 
-            <div class="row justify-content-center">
-        <div class="col-lg-7 col-xl-6 text-center hero-copy home-hero-copy">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6 text-center hero-copy home-hero-copy">
 
-            {% if home_data.has_applications %}
-                <h1 class="hero-headline home-title">
-                    Welcome back, {{ home_data.user_name }}.
-                </h1>
-                <p class="hero-sub home-subtitle">
-                    Continue where you left off. Start a new application or review your previous submissions.
-                </p>
-            {% else %}
-                <h1 class="hero-headline home-title">
-                    Welcome,<br>
-                    {{ home_data.user_name }}.
-                </h1>
-                <p class="hero-sub home-subtitle">
-                    Your account is ready. Submit your first loan eligibility application to begin.
-                </p>
-            {% endif %}
+                {% if home_data.has_applications %}
+                    <h1 class="hero-headline home-title">
+                        Welcome back, {{ home_data.user_name }}.
+                    </h1>
+                    <p class="hero-sub home-subtitle">
+                        Continue where you left off. Start a new application or review your previous submissions.
+                    </p>
+                {% else %}
+                    <h1 class="hero-headline home-title">
+                        Welcome,<br>{{ home_data.user_name }}.
+                    </h1>
+                    <p class="hero-sub home-subtitle">
+                        Your account is ready. Submit your first loan eligibility application to get started.
+                    </p>
+                {% endif %}
 
-            <div class="hero-cta-group home-cta-group">
-                <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-lg">
-                    New Application
-                </a>
-                <a href="{{ url_for('main.history') }}" class="btn-leps btn-secondary-leps home-history-btn">
-                    View History
-                </a>
+                <div class="hero-cta-group home-cta-group">
+                    <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-lg">
+                        New Application
+                    </a>
+                    {% if home_data.has_applications %}
+                        <a href="{{ url_for('main.history') }}" class="btn-leps btn-secondary-leps home-history-btn">
+                            View History
+                        </a>
+                    {% else %}
+                        <a href="#how-it-works" class="btn-leps btn-secondary-leps home-history-btn home-how-btn">
+                            Learn How It Works
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-9 col-xl-8">
-            <div class="home-latest-wrap">
-                <div class="home-latest-head">
-                    <div class="home-section-label">Most Recent Application</div>
-                    <p class="home-section-subtitle">
-                        Your most recent loan eligibility application.
-                    </p>
-                </div>
-
-                {% if home_data.latest_application %}
-                    {% set app = home_data.latest_application %}
-                    {% set pred = app.prediction %}
-
-                    <div class="home-latest-content">
-                        <dl class="home-definition-list">
-                            <div class="home-definition-row">
-                                <dt>Reference ID</dt>
-                                <dd>{{ app.reference_id }}</dd>
-                            </div>
-
-                            <div class="home-definition-row">
-                                <dt>Submitted</dt>
-                                <dd>{{ app.application_date.strftime('%d %b %Y') }}</dd>
-                            </div>
-
-                            <div class="home-definition-row">
-    <dt>Status</dt>
-    <dd>
-        {% if pred %}
-            {% if pred.predicted_class == 'Eligible' %}
-                <span class="badge-result eligible-badge">Eligible</span>
-            {% elif pred.predicted_class == 'Not Eligible' %}
-                <span class="badge-result not-eligible-badge">Not Eligible</span>
-            {% else %}
-                <span class="badge-result review-badge">Under Review</span>
-            {% endif %}
-        {% else %}
-            <span class="badge-result review-badge">Pending</span>
-        {% endif %}
-    </dd>
-</div>
-
-                            <div class="home-definition-row">
-    <dt>Eligibility Score</dt>
-    <dd>
-        {% if pred %}
-            {{ (pred.probability_score * 100) | round(1) }}%
-        {% else %}
-            Not available
-        {% endif %}
-    </dd>
-</div>
-
-                            <div class="home-definition-row">
-                                <dt>Estimated Loan</dt>
-                                <dd>
-                                    {% if pred and pred.estimated_loan_amount is not none %}
-                                        ₦{{ '{:,.2f}'.format(pred.estimated_loan_amount) }}
-                                    {% else %}
-                                        Not available
-                                    {% endif %}
-                                </dd>
-                            </div>
-                        </dl>
-                        <div class="home-latest-actions">
-                            <a href="{{ url_for('main.application_details', reference_id=app.reference_id) }}"
-                                class="home-view-link">
-                                 View Application
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="home-latest-content">
-                        <p class="home-empty-message">
-                            Your application history will appear here after your first submission. When you’re ready, begin a new eligibility assessment below.
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                <div class="home-latest-wrap">
+                    <div class="home-latest-head">
+                        <div class="home-section-label">Most Recent Application</div>
+                        <p class="home-section-subtitle">
+                            Your most recent loan eligibility application.
                         </p>
+                    </div>
 
-                        <div class="home-latest-actions">
-                            <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-sm">
+                    {% if home_data.latest_application %}
+                        {% set app = home_data.latest_application %}
+                        {% set pred = app.prediction %}
+
+                        <div class="home-latest-content">
+                            <dl class="home-definition-list">
+                                <div class="home-definition-row">
+                                    <dt>Reference ID</dt>
+                                    <dd>{{ app.reference_id }}</dd>
+                                </div>
+                                <div class="home-definition-row">
+                                    <dt>Submitted</dt>
+                                    <dd>{{ app.application_date.strftime('%d %b %Y') }}</dd>
+                                </div>
+                                <div class="home-definition-row">
+                                    <dt>Status</dt>
+                                    <dd>
+                                        {% if pred %}
+                                            {% if pred.predicted_class == 'Eligible' %}
+                                                <span class="badge-result eligible-badge">Eligible</span>
+                                            {% elif pred.predicted_class == 'Not Eligible' %}
+                                                <span class="badge-result not-eligible-badge">Not Eligible</span>
+                                            {% else %}
+                                                <span class="badge-result review-badge">Under Review</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge-result review-badge">Pending</span>
+                                        {% endif %}
+                                    </dd>
+                                </div>
+                                <div class="home-definition-row">
+                                    <dt>Eligibility Score</dt>
+                                    <dd>
+                                        {% if pred %}
+                                            {{ (pred.probability_score * 100) | round(1) }}%
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    </dd>
+                                </div>
+                                <div class="home-definition-row">
+                                    <dt>Estimated Loan</dt>
+                                    <dd>
+                                        {% if pred and pred.estimated_loan_amount is not none %}
+                                            &#8358;{{ '{:,.2f}'.format(pred.estimated_loan_amount) }}
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    </dd>
+                                </div>
+                            </dl>
+                            <div class="home-latest-actions">
+                                <a href="{{ url_for('main.application_details', reference_id=app.reference_id) }}"
+                                   class="home-view-link">
+                                    View Application
+                                </a>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <div class="home-empty-state">
+                            <div class="home-empty-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <h3 class="home-empty-title">No applications yet</h3>
+                            <p class="home-empty-body">
+                                Once you submit your first application, your result and summary will appear here.
+                            </p>
+                            <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-sm home-empty-cta">
                                 Start First Application
                             </a>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% if not home_data.has_applications %}
+<section class="home-how-section" id="how-it-works">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+
+                <div class="home-how-header">
+                    <span class="home-how-eyebrow">How It Works</span>
+                    <h2 class="home-how-title">Three steps, one result</h2>
+                    <p class="home-how-intro">
+                        LEPS checks whether you are likely to qualify for a loan based on your
+                        financial details. No paperwork, no office visit. You fill in a form,
+                        the system runs the numbers, and you get your result on the spot.
+                    </p>
+                </div>
+
+                <ol class="home-how-steps">
+                    <li class="home-how-step">
+                        <div class="home-how-step-num">01</div>
+                        <div class="home-how-step-body">
+                            <h4 class="home-how-step-title">Fill in your details</h4>
+                            <p class="home-how-step-desc">
+                                You will be asked for basic personal information, your monthly income,
+                                your BVN and NIN, and the loan amount you have in mind. The form is
+                                split into four short sections so it does not feel overwhelming.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="home-how-step">
+                        <div class="home-how-step-num">02</div>
+                        <div class="home-how-step-body">
+                            <h4 class="home-how-step-title">The system assesses your application</h4>
+                            <p class="home-how-step-desc">
+                                Once you submit, a machine learning model trained on thousands of loan
+                                records evaluates your information. It looks at your income, identity
+                                verification, loan history, and the amount you are requesting, then
+                                produces a score between 0 and 100.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="home-how-step">
+                        <div class="home-how-step-num">03</div>
+                        <div class="home-how-step-body">
+                            <h4 class="home-how-step-title">You get your result immediately</h4>
+                            <p class="home-how-step-desc">
+                                Your score, eligibility decision (Eligible, Not Eligible, or Under Review),
+                                and an estimated loan amount appear on screen straight away. A copy of
+                                the result is also saved to your account so you can review it later.
+                            </p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="home-how-note">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This is an academic demonstration. Results are produced by a trained model
+                    and are not a formal financial decision from any lending institution.
+                </div>
+
+                <div class="home-how-cta">
+                    <a href="{{ url_for('main.apply') }}" class="btn btn-gold btn-lg">
+                        Start My Application
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
 </section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var howBtn = document.querySelector('.home-how-btn');
+    if (howBtn) {
+        howBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var target = document.getElementById('how-it-works');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        howBtn.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            var target = document.getElementById('how-it-works');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, { passive: false });
+    }
+});
+</script>
 {% endblock %}
