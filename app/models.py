@@ -61,7 +61,8 @@ class LoanApplication(db.Model):
     existing_loan_amount = db.Column(db.Float, nullable=False, default=0.0)
 
     # Status
-    status = db.Column(db.String(20), nullable=False, default='Pending')
+    status = db.Column(db.String(50), nullable=False, default='Pending Review')
+    admin_comment = db.Column(db.Text, nullable=True)
     application_date = db.Column(db.DateTime, default=datetime.utcnow)
 
     prediction = db.relationship('Prediction', backref='application', uselist=False)
@@ -101,6 +102,7 @@ class AdminLog(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     action_type = db.Column(db.String(50), nullable=False)
     action_description = db.Column(db.String(300), nullable=False)
+    email_sent = db.Column(db.Boolean, nullable=False, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     ip_address = db.Column(db.String(50), nullable=True)
 

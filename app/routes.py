@@ -282,6 +282,9 @@ def admin_application_detail(reference_id):
 @login_required
 @admin_required
 def admin_update_application(reference_id):
+    from app.models import AdminLog
+    from app.email_service import send_decision_email
+
     application = LoanApplication.query.filter_by(
         reference_id=reference_id
     ).first()
@@ -291,29 +294,74 @@ def admin_update_application(reference_id):
         return redirect(url_for('main.admin_applications'))
 
     new_status = request.form.get('status', '').strip()
+    admin_comment = request.form.get('admin_comment', '').strip() or None
+    notify_applicant = request.form.get('notify_applicant') == 'on'
     override_result = request.form.get('override_result', '').strip()
 
-    valid_statuses = ['Pending', 'Processed', 'Reviewed']
+    valid_statuses = [
+        'Pending Review',
+        'Under Review',
+        'Eligible',
+        'Not Eligible',
+        'Requires Additional Information',
+    ]
     valid_results = ['Eligible', 'Not Eligible', 'Under Review']
 
     if new_status and new_status in valid_statuses:
         old_status = application.status
         application.status = new_status
+        application.admin_comment = admin_comment
         db.session.commit()
-        log_action(
-            'status_update',
-            f'Updated status of {reference_id} from {old_status} to {new_status}'
+
+        email_sent = False
+        if notify_applicant:
+            applicant = application.user if hasattr(application, 'user') else None
+            if not applicant:
+                from app.models import User
+                applicant = User.query.get(application.user_id)
+
+            if applicant:
+                email_sent = send_decision_email(
+                    to_email=applicant.email,
+                    applicant_name=applicant.full_name,
+                    application=application,
+                    new_status=new_status,
+                    admin_comment=admin_comment
+                )
+
+        entry = AdminLog(
+            admin_id=current_user.id,
+            action_type='status_update',
+            action_description=(
+                f'Updated status of {reference_id} from {old_status} to {new_status}'
+            ),
+            email_sent=email_sent,
+            ip_address=request.remote_addr
         )
+        db.session.add(entry)
+        db.session.commit()
+
         flash(f'Status updated to {new_status}.', 'success')
+        if notify_applicant and not email_sent:
+            flash('Status saved but the notification email could not be sent.', 'warning')
 
     if override_result and override_result in valid_results and application.prediction:
         old_result = application.prediction.predicted_class
         application.prediction.predicted_class = override_result
         db.session.commit()
-        log_action(
-            'override',
-            f'Overrode prediction of {reference_id} from {old_result} to {override_result}'
+
+        entry = AdminLog(
+            admin_id=current_user.id,
+            action_type='override',
+            action_description=(
+                f'Overrode prediction of {reference_id} from {old_result} to {override_result}'
+            ),
+            email_sent=False,
+            ip_address=request.remote_addr
         )
+        db.session.add(entry)
+        db.session.commit()
+
         flash(f'Result overridden to {override_result}.', 'success')
 
     return redirect(url_for('main.admin_application_detail', reference_id=reference_id))
@@ -401,16 +449,15 @@ def predict():
     db.session.add(prediction)
     db.session.commit()
 
-    #try:
-        #from app.email_service import send_result_email
-        #send_result_email(
-            #to_email=current_user.email,
-            #applicant_name=data['full_name'],
-            #application=application,
-            #prediction=prediction
-        #)
-    #except Exception:
-        #pass
+    try:
+        from app.email_service import send_receipt_email
+        send_receipt_email(
+            to_email=current_user.email,
+            applicant_name=data['full_name'],
+            application=application
+        )
+    except Exception:
+        pass
 
     return jsonify({
         'application_id': reference_id,
