@@ -10,9 +10,14 @@
                 <h2 class="page-title">Admin Dashboard</h2>
                 <p class="page-subtitle">Overview of all loan eligibility applications.</p>
             </div>
-            <a href="{{ url_for('main.admin_applications') }}" class="btn btn-navy">
-                View All Applications
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-outline-navy">
+                    <i class="bi bi-bar-chart-line me-1"></i> Reports
+                </a>
+                <a href="{{ url_for('main.admin_applications') }}" class="btn btn-navy">
+                    View All Applications
+                </a>
+            </div>
         </div>
 
         <!-- Stats row -->
