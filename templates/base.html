@@ -20,9 +20,14 @@
     <nav class="navbar navbar-expand-lg navbar-dark leps-navbar">
         <div class="container">
             <a class="navbar-brand leps-brand" href="{{ url_for('main.index') }}">
-                <div class="brand-mark">
-                    <span class="brand-mark-text">LEPS</span>
-                </div>
+                <svg class="brand-svg" viewBox="0 0 52 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="LEPS">
+                    <!-- L -->
+                    <text x="0" y="22" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="500" fill="#FFFFFF" letter-spacing="-0.5">L</text>
+                    <!-- Slash divider -->
+                    <line x1="17" y1="26" x2="24" y2="2" stroke="#C49A1A" stroke-width="1.8" stroke-linecap="round"/>
+                    <!-- EPS -->
+                    <text x="22" y="22" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="500" fill="#C49A1A" letter-spacing="-0.5">EPS</text>
+                </svg>
                 <span class="brand-full">Loan Eligibility Prediction System</span>
             </a>
             <button class="navbar-toggler" type="button"
