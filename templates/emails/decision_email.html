@@ -296,7 +296,11 @@
                     <tr>
                         <td class="detail-key">Date Submitted</td>
                         <td class="detail-value">
-                            {{ application.application_date.strftime('%d %B %Y') }}
+                            {% if application.application_date %}
+                                {{ application.application_date.strftime('%d %B %Y') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
                         </td>
                     </tr>
                     <tr>
