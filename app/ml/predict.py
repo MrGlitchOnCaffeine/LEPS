@@ -1,13 +1,18 @@
 import os
+import logging
+
 import joblib
 import numpy as np
+import pandas as pd
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'model.pkl')
-SCALER_PATH = os.path.join(os.path.dirname(__file__), 'scaler.pkl')
+logger = logging.getLogger(__name__)
+
+MODEL_PATH   = os.path.join(os.path.dirname(__file__), 'model.pkl')
+SCALER_PATH  = os.path.join(os.path.dirname(__file__), 'scaler.pkl')
 ENCODER_PATH = os.path.join(os.path.dirname(__file__), 'encoders.pkl')
 
-_model = None
-_scaler = None
+_model    = None
+_scaler   = None
 _encoders = None
 
 
@@ -16,6 +21,7 @@ def _load_artifacts():
 
     if _model is None:
         _model = joblib.load(MODEL_PATH)
+        logger.info('ML model loaded from %s', MODEL_PATH)
 
     if _scaler is None:
         _scaler = joblib.load(SCALER_PATH)
@@ -39,41 +45,52 @@ def predict_eligibility(form_data: dict) -> dict:
     """
     _load_artifacts()
 
-    edu_order = _encoders['education_order']
-    gender_enc = _encoders['gender']
-    emp_enc = _encoders['employment']
+    edu_order   = _encoders['education_order']
+    gender_enc  = _encoders['gender']
+    emp_enc     = _encoders['employment']
+    feature_columns = _encoders.get('feature_columns', [
+        'age', 'gender_encoded', 'education_encoded', 'employment_encoded',
+        'monthly_income', 'bvn_registered', 'nin_registered',
+        'existing_loan_defaults', 'existing_loan_amount',
+        'loan_amount_requested', 'loan_tenure_months', 'loan_to_income_ratio'
+    ])
 
-    gender_encoded = int(gender_enc.transform([form_data['gender']])[0])
-    education_encoded = edu_order.get(form_data['education_level'], 0)
+    gender_encoded     = int(gender_enc.transform([form_data['gender']])[0])
+    education_encoded  = edu_order.get(form_data['education_level'], 0)
     employment_encoded = int(emp_enc.transform([form_data['employment_type']])[0])
 
     monthly_income = float(form_data['monthly_income'])
-    loan_amount = float(form_data['loan_amount_requested'])
+    loan_amount    = float(form_data['loan_amount_requested'])
 
     loan_to_income_ratio = (
         loan_amount / monthly_income if monthly_income > 0 else 999
     )
 
-    feature_vector = np.array([[
-        int(form_data['age']),
-        gender_encoded,
-        education_encoded,
-        employment_encoded,
-        monthly_income,
-        int(form_data['bvn_registered']),
-        int(form_data['nin_registered']),
-        int(form_data['existing_loan_defaults']),
-        float(form_data['existing_loan_amount']),
-        loan_amount,
-        int(form_data['loan_tenure_months']),
-        loan_to_income_ratio
-    ]])
+    # Build a DataFrame with the same column names used during training.
+    # This avoids the scikit-learn FeatureNames mismatch warning that occurs
+    # when a raw numpy array is passed to a scaler fitted on a DataFrame.
+    row = {
+        'age':                    int(form_data['age']),
+        'gender_encoded':         gender_encoded,
+        'education_encoded':      education_encoded,
+        'employment_encoded':     employment_encoded,
+        'monthly_income':         monthly_income,
+        'bvn_registered':         int(form_data['bvn_registered']),
+        'nin_registered':         int(form_data['nin_registered']),
+        'existing_loan_defaults': int(form_data['existing_loan_defaults']),
+        'existing_loan_amount':   float(form_data['existing_loan_amount']),
+        'loan_amount_requested':  loan_amount,
+        'loan_tenure_months':     int(form_data['loan_tenure_months']),
+        'loan_to_income_ratio':   loan_to_income_ratio,
+    }
 
-    scaled = _scaler.transform(feature_vector)
+    feature_df = pd.DataFrame([row], columns=feature_columns)
+
+    scaled      = _scaler.transform(feature_df)
     probability = float(_model.predict_proba(scaled)[0][1])
-    prediction = int(_model.predict(scaled)[0])
+    prediction  = int(_model.predict(scaled)[0])
 
     return {
-        'score': round(probability, 4),
+        'score':    round(probability, 4),
         'eligible': prediction
     }
