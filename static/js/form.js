@@ -580,6 +580,12 @@
                         showErrors([{ field: null, message: result.data.error || 'An error occurred while submitting your application.' }]);
                         return;
                     }
+                    
+                    console.log(result);
+                    console.log(result.data);
+                    console.log(result.data.application_id);
+
+window.location.href = '/application-submitted/' + result.data.application_id;
 
                     window.location.href = '/application-submitted/' + result.data.application_id;
                 })
