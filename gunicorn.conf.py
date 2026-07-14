@@ -7,22 +7,22 @@
 #   loaded into memory per worker. Multiple workers each load their own copy,
 #   exhausting RAM and causing SIGKILL. One worker avoids this.
 #
-# preload_app=True
-#   Loads the app (including the ML model) once in the master process before
-#   forking. Workers inherit the memory via copy-on-write, reducing peak RAM.
+# preload_app is intentionally OFF.
 #
-# timeout=120
-#   Default is 30s. The first request after a cold start loads the ML model
-#   from disk, which can take 10-20s on Render free tier. 120s prevents
-#   premature worker kills during model loading.
+# scikit-learn and XGBoost link OpenBLAS/OpenMP, which spin up native thread
+# pools the moment the model is loaded via joblib.load(). With preload_app=True,
+# that loading happens in the gunicorn master process BEFORE it forks the
+# worker. Forking a process that already has live BLAS thread pools is a
+# known deadlock hazard: the child worker inherits mutexes with no owning
+# thread, and the first threading.Thread() created in that worker can hang
+# forever. This was the actual cause of admin status updates hanging.
 #
-# worker_class='sync'
-#   Default sync workers are appropriate for this workload. Gevent/eventlet
-#   are not needed and add complexity.
-
-workers = 1
-preload_app = True
-timeout = 120
+# With preload_app off, the model loads fresh inside the worker AFTER fork,
+# so no thread state is inherited and no deadlock risk exists. Since we run
+# a single worker anyway, preload_app's copy-on-write memory benefit (which
+# only matters with multiple workers) does not apply here — there is no
+# downside to leaving it off.
+preload_app = False
 worker_class = 'sync'
 bind = '0.0.0.0:10000'
 accesslog = '-'
