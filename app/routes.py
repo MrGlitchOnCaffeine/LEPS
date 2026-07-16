@@ -172,18 +172,6 @@ def admin_required(f):
     return decorated
 
 
-def log_action(action_type, description):
-    from app.models import AdminLog
-    entry = AdminLog(
-        admin_id=current_user.id,
-        action_type=action_type,
-        action_description=description,
-        ip_address=request.remote_addr
-    )
-    db.session.add(entry)
-    db.session.commit()
-
-
 @main.route('/admin')
 @login_required
 @admin_required
@@ -261,7 +249,6 @@ def admin_applications():
 @login_required
 @admin_required
 def admin_application_detail(reference_id):
-    import json
     application = LoanApplication.query.filter_by(
         reference_id=reference_id
     ).first()
@@ -323,12 +310,12 @@ def admin_update_application(reference_id):
         application.admin_comment = admin_comment
         db.session.commit()
 
-        # Sent synchronously — SendGrid's HTTP API is HTTPS on port 443,
-        # which is not blocked on Render's free tier (SMTP ports 25/465/587
-        # were; this was confirmed directly against this deployment). The
-        # call is bounded to 10s inside email_service.py, so this can no
-        # longer hang the request the way SMTP did. email_sent here reflects
-        # a real, confirmed outcome — not just an attempt.
+        # Sent synchronously — Brevo's HTTP API is HTTPS on port 443, which
+        # is not blocked on Render's free tier (SMTP ports 25/465/587 were;
+        # confirmed directly against this deployment). The call is bounded
+        # to 10s inside email_service.py, so this can no longer hang the
+        # request the way SMTP did. email_sent here reflects a real,
+        # confirmed outcome — not just an attempt.
         email_sent = False
         if notify_applicant:
             from app.models import User
@@ -726,7 +713,7 @@ def predict():
     if not validation['valid']:
         return jsonify({'error': validation['errors'][0]}), 422
 
-    data = validation['data']
+    applicant_data = validation['data']
 
     try:
         from app.ml.predict import predict_eligibility
@@ -734,11 +721,10 @@ def predict():
     except Exception:
         return jsonify({'error': 'The prediction model is not available. Please run the training script first.'}), 500
 
-    result = evaluate(ml_result['score'], data)
+    decision_result = evaluate(ml_result['score'], data)
 
     reference_id = generate_reference_id()
 
-    import json
     import logging
     import traceback
 
@@ -747,22 +733,22 @@ def predict():
     application = LoanApplication(
         reference_id=reference_id,
         user_id=current_user.id,
-        full_name=data['full_name'],
-        date_of_birth=data['date_of_birth'],
-        age=data['age'],
-        gender=data['gender'],
-        marital_status=data['marital_status'],
-        education_level=data['education_level'],
-        employment_type=data['employment_type'],
-        monthly_income=data['monthly_income'],
-        bvn_number=data['bvn_number'],
-        nin_number=data['nin_number'],
-        address=data['address'],
-        city=data['city'],
-        loan_amount_requested=data['loan_amount_requested'],
-        loan_tenure_months=data['loan_tenure_months'],
-        existing_loan_defaults=data['existing_loan_defaults'],
-        existing_loan_amount=data['existing_loan_amount'],
+        full_name=applicant_data['full_name'],
+        date_of_birth=applicant_data['date_of_birth'],
+        age=applicant_data['age'],
+        gender=applicant_data['gender'],
+        marital_status=applicant_data['marital_status'],
+        education_level=applicant_data['education_level'],
+        employment_type=applicant_data['employment_type'],
+        monthly_income=applicant_data['monthly_income'],
+        bvn_number=applicant_data['bvn_number'],
+        nin_number=applicant_data['nin_number'],
+        address=applicant_data['address'],
+        city=applicant_data['city'],
+        loan_amount_requested=applicant_data['loan_amount_requested'],
+        loan_tenure_months=applicant_data['loan_tenure_months'],
+        existing_loan_defaults=applicant_data['existing_loan_defaults'],
+        existing_loan_amount=applicant_data['existing_loan_amount'],
         status='Pending Review'
     )
     db.session.add(application)
@@ -770,11 +756,11 @@ def predict():
 
     prediction = Prediction(
         application_id=application.id,
-        predicted_class=result['predicted_class'],
-        probability_score=result['probability_score'],
-        estimated_loan_amount=result['estimated_loan_amount'],
-        denial_reason=result['denial_reason'],
-        key_factors=json.dumps(result['key_factors']),
+        predicted_class=decision_result['predicted_class'],
+        probability_score=decision_result['probability_score'],
+        estimated_loan_amount=decision_result['estimated_loan_amount'],
+        denial_reason=decision_result['denial_reason'],
+        key_factors=json.dumps(decision_result['key_factors']),
         model_version='1.0'
     )
     db.session.add(prediction)
@@ -785,8 +771,8 @@ def predict():
         reference_id, current_user.id
     )
 
-    # Sent synchronously — SendGrid's HTTP API is HTTPS on port 443, which
-    # is not blocked on Render's free tier (SMTP ports 25/465/587 were;
+    # Sent synchronously — Brevo's HTTP API is HTTPS on port 443, which is
+    # not blocked on Render's free tier (SMTP ports 25/465/587 were;
     # confirmed directly against this deployment). The call is bounded to
     # 10s inside email_service.py and never raises, so a failure here can
     # never prevent the JSON response below from reaching the client.
@@ -794,7 +780,7 @@ def predict():
         from app.email_service import send_receipt_email
         send_receipt_email(
             to_email=current_user.email,
-            applicant_name=data['full_name'],
+            applicant_name=applicant_data['full_name'],
             application=application
         )
     except Exception:
@@ -805,11 +791,11 @@ def predict():
 
     return jsonify({
         'application_id': reference_id,
-        'predicted_class': result['predicted_class'],
-        'eligibility_percentage': result['eligibility_percentage'],
-        'estimated_loan_amount': result['estimated_loan_amount'],
-        'denial_reason': result['denial_reason'],
-        'key_factors': result['key_factors']
+        'predicted_class': decision_result['predicted_class'],
+        'eligibility_percentage': decision_result['eligibility_percentage'],
+        'estimated_loan_amount': decision_result['estimated_loan_amount'],
+        'denial_reason': decision_result['denial_reason'],
+        'key_factors': decision_result['key_factors']
     }), 200
 
 
@@ -828,7 +814,6 @@ def result(reference_id):
         flash('Application not found.', 'danger')
         return redirect(url_for('main.index'))
 
-    import json
     key_factors = []
     if application.prediction and application.prediction.key_factors:
         try:
@@ -842,7 +827,8 @@ def result(reference_id):
         prediction=application.prediction,
         key_factors=key_factors
     )
-    
+
+
 @main.route('/application-submitted/<reference_id>')
 @login_required
 def application_submitted(reference_id):
@@ -858,7 +844,6 @@ def application_submitted(reference_id):
         flash('Application not found.', 'danger')
         return redirect(url_for('main.index'))
 
-    import json
     key_factors = []
     if application.prediction and application.prediction.key_factors:
         try:
@@ -872,6 +857,7 @@ def application_submitted(reference_id):
         prediction=application.prediction,
         key_factors=key_factors
     )
+
 
 @main.route('/application-details/<reference_id>')
 @login_required
@@ -888,7 +874,6 @@ def application_details(reference_id):
         flash('Application not found.', 'danger')
         return redirect(url_for('main.index'))
 
-    import json
 
     key_factors = []
 
@@ -904,7 +889,8 @@ def application_details(reference_id):
         prediction=application.prediction,
         key_factors=key_factors
     )
-    
+
+
 @main.route('/application-details/<reference_id>/pdf')
 @login_required
 def download_application_pdf(reference_id):
@@ -941,6 +927,7 @@ def download_application_pdf(reference_id):
         download_name=f"LEPS_{application.reference_id}.pdf",
         mimetype="application/pdf"
     )
+
 
 @main.route('/history')
 @login_required

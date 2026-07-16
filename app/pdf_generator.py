@@ -32,7 +32,7 @@ def _format_date(value):
         return "Not available"
     try:
         return value.strftime("%d %b %Y, %I:%M %p")
-    except Exception:
+    except (AttributeError, ValueError):
         return _safe_text(value)
 
 

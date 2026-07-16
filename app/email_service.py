@@ -9,10 +9,9 @@ logger = logging.getLogger(__name__)
 BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
 
 # HTTPS on port 443 is not blocked on Render's free tier the way SMTP
-# ports 25/465/587 are — this was confirmed directly against this
-# deployment (see /admin/diagnostics/smtp-test history). A generous but
-# still bounded timeout is kept here purely as a safety net, not because
-# we expect it to be hit.
+# ports 25/465/587 are — confirmed directly against this deployment via
+# /admin/diagnostics/email-test. A generous but bounded timeout is kept
+# here as a safety net, not because we expect it to be hit.
 _REQUEST_TIMEOUT_SECONDS = 10
 
 
@@ -53,7 +52,6 @@ def _send_via_brevo(to_email: str, subject: str, html_body: str) -> bool:
             timeout=_REQUEST_TIMEOUT_SECONDS
         )
 
-        # Brevo returns 201 Created with a messageId on success.
         if response.status_code == 201:
             logger.info('Email sent via Brevo to %s: %s', to_email, subject)
             return True
@@ -82,106 +80,75 @@ def _send_via_brevo(to_email: str, subject: str, html_body: str) -> bool:
         return False
 
 
+def _render_and_send(template_name: str, subject: str, to_email: str,
+                      context: dict, error_context: str) -> bool:
+    """
+    Renders an email template and sends it via Brevo. Shared by every
+    public send_* function below since they all follow the same
+    render-then-send shape and only differ in template, subject, and context.
+    """
+    try:
+        html_body = render_template(template_name, **context)
+        return _send_via_brevo(to_email, subject, html_body)
+    except Exception:
+        logger.error(
+            'Failed to build %s for %s:\n%s',
+            error_context, to_email, traceback.format_exc()
+        )
+        return False
+
+
 def send_receipt_email(to_email: str, applicant_name: str, application) -> bool:
     """
     Sends a confirmation email after an application is submitted.
     Returns True on success, False on failure. Never raises.
     """
-    try:
-        tracking_url = url_for(
-            'main.application_details',
-            reference_id=application.reference_id,
-            _external=True
-        )
+    tracking_url = url_for(
+        'main.application_details',
+        reference_id=application.reference_id,
+        _external=True
+    )
 
-        html_body = render_template(
-            'emails/receipt_email.html',
-            applicant_name=applicant_name,
-            application=application,
-            tracking_url=tracking_url
-        )
-
-        subject = f'Application Received - {application.reference_id}'
-        return _send_via_brevo(to_email, subject, html_body)
-
-    except Exception:
-        logger.error(
-            'Failed to build receipt email for %s to %s:\n%s',
-            application.reference_id, to_email, traceback.format_exc()
-        )
-        return False
+    return _render_and_send(
+        template_name='emails/receipt_email.html',
+        subject=f'Application Received - {application.reference_id}',
+        to_email=to_email,
+        context={
+            'applicant_name': applicant_name,
+            'application': application,
+            'tracking_url': tracking_url
+        },
+        error_context=f'receipt email for {application.reference_id}'
+    )
 
 
 def send_decision_email(
     to_email: str,
     applicant_name: str,
+    application,
     new_status: str,
     admin_comment: str = None,
-    application=None,
-    application_ref: str = None,
-    tracking_url: str = None,
 ) -> bool:
     """
     Sends a status decision email after an administrator updates an application.
-
-    Pass either `application` (ORM object) or `application_ref` (reference_id
-    string). Returns True on success, False on failure. Never raises.
+    Returns True on success, False on failure. Never raises.
     """
-    ref_id = application_ref or (application.reference_id if application else 'unknown')
+    tracking_url = url_for(
+        'main.application_details',
+        reference_id=application.reference_id,
+        _external=True
+    )
 
-    try:
-        if tracking_url is None:
-            tracking_url = url_for(
-                'main.application_details',
-                reference_id=ref_id,
-                _external=True
-            )
-
-        class _AppProxy:
-            def __init__(self, ref):
-                self.reference_id = ref
-                self.application_date = None
-
-        template_app = application if application is not None else _AppProxy(ref_id)
-
-        html_body = render_template(
-            'emails/decision_email.html',
-            applicant_name=applicant_name,
-            application=template_app,
-            new_status=new_status,
-            admin_comment=admin_comment,
-            tracking_url=tracking_url
-        )
-
-        subject = f'Application Update - {ref_id}'
-        return _send_via_brevo(to_email, subject, html_body)
-
-    except Exception:
-        logger.error(
-            'Failed to build decision email for %s to %s:\n%s',
-            ref_id, to_email, traceback.format_exc()
-        )
-        return False
-
-
-def send_result_email(to_email: str, applicant_name: str, application, prediction) -> bool:
-    """
-    Retained for backwards compatibility. Not used in the primary workflow.
-    """
-    try:
-        html_body = render_template(
-            'emails/result_email.html',
-            applicant_name=applicant_name,
-            application=application,
-            prediction=prediction
-        )
-
-        subject = f'Your Loan Eligibility Result - {application.reference_id}'
-        return _send_via_brevo(to_email, subject, html_body)
-
-    except Exception:
-        logger.error(
-            'Failed to build result email for %s:\n%s',
-            application.reference_id, traceback.format_exc()
-        )
-        return False
+    return _render_and_send(
+        template_name='emails/decision_email.html',
+        subject=f'Application Update - {application.reference_id}',
+        to_email=to_email,
+        context={
+            'applicant_name': applicant_name,
+            'application': application,
+            'new_status': new_status,
+            'admin_comment': admin_comment,
+            'tracking_url': tracking_url
+        },
+        error_context=f'decision email for {application.reference_id}'
+    )

@@ -124,12 +124,12 @@ def _build_key_factors(data: dict, ml_score: float) -> list:
     if int(data.get('nin_registered', 1)) == 1:
         factors.append('NIN registered')
 
-    emp = data.get('employment_type', '')
-    if emp == 'Salaried':
+    employment_type = data.get('employment_type', '')
+    if employment_type == 'Salaried':
         factors.append('Stable salaried employment')
-    elif emp == 'Self-Employed':
+    elif employment_type == 'Self-Employed':
         factors.append('Self-employed status')
-    elif emp == 'Unemployed':
+    elif employment_type == 'Unemployed':
         factors.append('No active employment')
 
     if ml_score >= 0.75:
