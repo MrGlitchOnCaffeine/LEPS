@@ -72,7 +72,7 @@ def create_app(config_name='default'):
             email=os.getenv("TEST_USER_EMAIL"),
             password=os.getenv("TEST_USER_PASSWORD"),
             phone=os.getenv("TEST_USER_PHONE", ""),
-            role="user"
+            role="applicant"
         )
 
     return app
