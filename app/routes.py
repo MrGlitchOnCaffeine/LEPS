@@ -717,11 +717,11 @@ def predict():
 
     try:
         from app.ml.predict import predict_eligibility
-        ml_result = predict_eligibility(data)
+        ml_result = predict_eligibility(applicant_data)
     except Exception:
         return jsonify({'error': 'The prediction model is not available. Please run the training script first.'}), 500
 
-    decision_result = evaluate(ml_result['score'], data)
+    decision_result = evaluate(ml_result['score'], applicant_data)
 
     reference_id = generate_reference_id()
 
