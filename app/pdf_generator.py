@@ -266,7 +266,9 @@ def generate_application_pdf(application, prediction=None, key_factors=None):
     if estimated_loan is None:
         estimated_loan_text = "Not available"
     else:
-        estimated_loan_text = f"NGN {estimated_loan:,.2f} (based on income and score, not a final offer)"
+        tenure = getattr(application, "loan_tenure_months", None)
+        tenure_text = f", over {tenure} months" if tenure else ""
+        estimated_loan_text = f"NGN {estimated_loan:,.2f}{tenure_text} (based on income and score, not a final offer)"
 
     assessment_rows = [
         [Paragraph("<b>Eligibility Score</b>", body_style), Paragraph(escape(score_text), body_bold_style)],
